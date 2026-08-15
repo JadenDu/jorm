@@ -50,8 +50,8 @@ jobs:
           mvn -v
 
       # 形式校验 (spotless/checkstyle/spotbugs) 只在 jorm-core 跑一次即可,
-      # 因为 starter 侧的同类插件走相同配置 + 相同 build-tools/.-am 同时
-      # build 依赖的 core 模块, 满足 reactor 解析需要.
+      # 因为 starter 侧的同类插件走相同配置 + 相同 build-tools/.
+      # -pl jorm-core -am: 仅构建 core, 同时 build 依赖的 parent (reactor 需要).
       - name: Spotless check (core)
         if: always()
         run: mvn ${{ env.MAVEN_CLI_OPTS }} -pl jorm-core -am spotless:check
@@ -64,9 +64,14 @@ jobs:
         if: always()
         run: mvn ${{ env.MAVEN_CLI_OPTS }} -pl jorm-core -am spotbugs:check
 
-      # 完整 verify: reactor 负责顺序, jacoco 覆盖率闸门仅在 core 生效.
-      - name: Verify (tests + coverage gate on core)
-        run: mvn ${{ env.MAVEN_CLI_OPTS }} verify -Dtest='!*IntegrationTest,*CRUDTest' -DfailIfNoTests=false
+      # Core: 跑全部测试 + jacoco 覆盖率闸门, 然后 install 到 .m2 供 starter 复用.
+      - name: Verify & install core (tests + coverage gate)
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} -pl jorm-core -am install
+
+      # Starter: 跑过滤后的测试, 跳过需要 Docker 的 Testcontainers/Redis 集成测试
+      # (integration job 单独跑它们). core 已 install, 无需 -am 重建.
+      - name: Verify starter (filtered tests; no Docker -> skip Testcontainers)
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} -pl jorm-spring-boot-starter verify -Dtest='!*IntegrationTest,*CRUDTest' -DfailIfNoTests=false
 
       - name: Upload JaCoCo report (core)
         if: always()
