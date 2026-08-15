@@ -13,6 +13,8 @@ concurrency:
 
 env:
   MAVEN_OPTS: "-Dmaven.repo.frontend=true"
+  # 聚合构建: 在根 pom 上跑, reactor 自动按 jorm-core -> jorm-spring-boot-starter
+  # 顺序构建, 无需手动两段式.
   MAVEN_CLI_OPTS: "-B -ntp -Dmaven.test.failure.ignore=false -Dgpg.skip=true"
 
 jobs:
@@ -47,29 +49,24 @@ jobs:
           java -version
           mvn -v
 
+      # 形式校验 (spotless/checkstyle/spotbugs) 只在 jorm-core 跑一次即可,
+      # 因为 starter 侧的同类插件走相同配置 + 相同 build-tools/.-am 同时
+      # build 依赖的 core 模块, 满足 reactor 解析需要.
       - name: Spotless check (core)
         if: always()
-        run: mvn -f jorm-core/pom.xml ${{ env.MAVEN_CLI_OPTS }} spotless:check
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} -pl jorm-core -am spotless:check
 
       - name: Checkstyle (core)
         if: always()
-        run: mvn -f jorm-core/pom.xml ${{ env.MAVEN_CLI_OPTS }} checkstyle:check
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} -pl jorm-core -am checkstyle:check
 
       - name: SpotBugs (core)
         if: always()
-        run: mvn -f jorm-core/pom.xml ${{ env.MAVEN_CLI_OPTS }} spotbugs:check
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} -pl jorm-core -am spotbugs:check
 
-      - name: Compile core
-        run: mvn -f jorm-core/pom.xml ${{ env.MAVEN_CLI_OPTS }} clean install -DskipTests
-
-      - name: Verify core (tests + coverage gate)
-        run: mvn -f jorm-core/pom.xml ${{ env.MAVEN_CLI_OPTS }} verify
-
-      - name: Compile starter
-        run: mvn -f jorm-spring-boot-starter/pom.xml ${{ env.MAVEN_CLI_OPTS }} clean install -DskipTests
-
-      - name: Verify starter (tests; no Docker available -> skip Testcontainers)
-        run: mvn -f jorm-spring-boot-starter/pom.xml ${{ env.MAVEN_CLI_OPTS }} verify -Dtest='!*IntegrationTest,*CRUDTest' -DfailIfNoTests=false
+      # 完整 verify: reactor 负责顺序, jacoco 覆盖率闸门仅在 core 生效.
+      - name: Verify (tests + coverage gate on core)
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} verify -Dtest='!*IntegrationTest,*CRUDTest' -DfailIfNoTests=false
 
       - name: Upload JaCoCo report (core)
         if: always()
@@ -103,9 +100,7 @@ jobs:
           distribution: temurin
           java-version: 11
           cache: maven
-      - name: Install core
-        run: mvn -f jorm-core/pom.xml ${{ env.MAVEN_CLI_OPTS }} clean install -DskipTests
       - name: Run Testcontainers-based starter integration tests
         env:
           TESTCONTAINERS_RYUK_DISABLED: "true"
-        run: mvn -f jorm-spring-boot-starter/pom.xml ${{ env.MAVEN_CLI_OPTS }} verify
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} -pl jorm-spring-boot-starter -am verify

@@ -223,12 +223,10 @@
                         </execution>
                     </executions>
                 </plugin>
-                <!-- Central 发布: 各子模块自行激活 (extensions=true 会接管 deploy) -->
                 <plugin>
                     <groupId>org.sonatype.central</groupId>
                     <artifactId>central-publishing-maven-plugin</artifactId>
                     <version>0.4.0</version>
-                    <extensions>true</extensions>
                     <configuration>
                         <publishingServerId>central</publishingServerId>
                         <tokenAuth>true</tokenAuth>
@@ -239,13 +237,13 @@
         </pluginManagement>
 
         <plugins>
-            <!-- 聚合器自身是 packaging=pom, 跳过默认 deploy-plugin, 避免把根 pom 传到 Central -->
+            <!-- Central 发布: extensions=true 让该插件接管整个 reactor 的 deploy,
+                 把 jorm-parent + jorm-core + jorm-spring-boot-starter 三个 GAV
+                 打包成一个 deployment 推到 Central Portal。子模块无需再重复声明。 -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <extensions>true</extensions>
             </plugin>
         </plugins>
     </build>

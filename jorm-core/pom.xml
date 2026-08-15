@@ -227,11 +227,7 @@
                 <artifactId>maven-gpg-plugin</artifactId>
             </plugin>
             <!-- 发布插件: 接管子模块 deploy 到 Central Portal -->
-            <plugin>
-                <groupId>org.sonatype.central</groupId>
-                <artifactId>central-publishing-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
+            </plugins>
     </build>
 
 </project>
