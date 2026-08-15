@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter xmlns="https://github.com/spotbugs/filter/3.0.0"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0 https://raw.githubusercontent.com/spotbugs/spotbugs/3.1.0/spotbugs/etc/findbugsfilter.xsd">
+
+  <!-- The reflection helpers intentionally access entity fields by reflection.
+       We accept the visibility implications as documented design. -->
+  <Match>
+    <Class name="io.github.jadendu.util.EntityHelper"/>
+    <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2,MS_EXPOSE_REP,DP_DO_INSIDE_DO_PRIVILEGED"/>
+  </Match>
+
+  <Match>
+    <Class name="io.github.jadendu.util.ResultSetMapper"/>
+    <Bug pattern="EI_EXPOSE_REP"/>
+  </Match>
+
+  <!-- Builder / Session classes are intentionally stateful chainable
+       helpers. Returning the session itself is the fluent-API contract;
+       the internal Connection reference is shared by design. -->
+  <Match>
+    <Class name="~io\.github\.jadendu\.(session|sqlBuilder)\..*"/>
+    <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+  </Match>
+
+  <!-- Generated field access is intentional: the only consumer is
+       ResultSetMapper::persistentFieldFor. -->
+  <Match>
+    <Bug code="UWF"/>
+  </Match>
+
+  <!-- We don't use the sync-struggle patterns internally. -->
+  <Match>
+    <Bug pattern="UPM_UNCALLED_PRIVATE_METHOD"/>
+  </Match>
+
+  <!-- Session PascalCase chainable methods (Where / Find / Save / Update /
+       Delete / Set / Model / Select / Having / Group / Order / Limit) are
+       deprecated for removal in 3.0. We know they break Java naming
+       convention; suppress during the 2.x deprecation window. -->
+  <Match>
+    <Class name="~io\.github\.jadendu\.session\..*"/>
+    <Bug pattern="NM_METHOD_NAMING_CONVENTION"/>
+  </Match>
+
+  <!-- Stream returned via findStream is closed via Stream.onClose(...).
+       SpotBugs' dataflow cannot follow the onClose indirection. -->
+  <Match>
+    <Class name="io.github.jadendu.session.FindSession"/>
+    <Method name="findStream"/>
+    <Bug pattern="OBL_UNSATISFIED_OBLIGATION"/>
+  </Match>
+
+  <!-- BaseSession's auto-managed constructor throws JormException to
+       refuse invalid state. Throwing from a constructor is the lesser
+       evil compared with silently continuing into a corrupt state. -->
+  <Match>
+    <Class name="io.github.jadendu.session.base.BaseSession"/>
+    <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+  </Match>
+
+  <!-- Jorm.setDataSource intentionally stores the caller's DataSource in
+       a static volatile field. Documented singleton contract. -->
+  <Match>
+    <Class name="io.github.jadendu.session.factory.Jorm"/>
+    <Bug pattern="EI_EXPOSE_STATIC_REP2,MS_SHOULD_BE_FINAL,MS_CANNOT_BE_FINAL"/>
+  </Match>
+
+  <!-- CacheManager + StatisticsRegistry are process-wide singleton holders
+       returning mutable stats objects. Documented global-access design. -->
+  <Match>
+    <Class name="io.github.jadendu.cache.CacheManager"/>
+    <Bug pattern="EI_EXPOSE_STATIC_REP2,MS_EXPOSE_REP"/>
+  </Match>
+  <Match>
+    <Class name="io.github.jadendu.metrics.StatisticsRegistry"/>
+    <Bug pattern="MS_EXPOSE_REP,MS_SHOULD_BE_FINAL"/>
+  </Match>
+  <Match>
+    <Class name="io.github.jadendu.cache.MeasuringSecondLevelCache"/>
+    <Bug pattern="EI_EXPOSE_REP"/>
+  </Match>
+
+  <!-- ColumnMapping.field(): the Field handle is used by reflection
+       callers (builders/mappers) to populate entity instances. -->
+  <Match>
+    <Class name="io.github.jadendu.entity.ColumnMapping"/>
+    <Bug pattern="EI_EXPOSE_REP"/>
+  </Match>
+
+  <!-- Page.content()/Sort.orders() wrap the incoming list with
+       Collections.unmodifiableList in the constructor. SpotBugs cannot
+       see the unmodifiable boundary across construction. -->
+  <Match>
+    <Class name="io.github.jadendu.query.Page"/>
+    <Bug pattern="EI_EXPOSE_REP"/>
+  </Match>
+  <Match>
+    <Class name="io.github.jadendu.query.Sort"/>
+    <Bug pattern="EI_EXPOSE_REP"/>
+  </Match>
+
+  <!-- Starter-side Spring beans wire properties/template references via
+       constructor injection. Spring-managed beans aren't published
+       post-construction. -->
+  <Match>
+    <Class name="io.github.jadendu.autoconfigure.JormAutoConfiguration"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+  <Match>
+    <Class name="io.github.jadendu.cache.redis.RedisSecondLevelCache"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+</FindBugsFilter>

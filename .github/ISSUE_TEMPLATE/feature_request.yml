@@ -1,0 +1,63 @@
+name: Feature request
+description: Suggest a new feature or improvement for JORM
+title: "[feat] <short, specific summary>"
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea! Tell us what you'd like to see and why.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do that JORM currently makes hard?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: |
+        Sketch the API you'd like (pseudo-code is fine). Mention which
+        session it lives on (`FindSession`, `JormTemplate`, ...).
+      render: java
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: |
+        Workarounds you're using today, third-party libs considered, etc.
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Affected module
+      options:
+        - jorm (core)
+        - jorm-spring-boot-starter
+        - both
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: breaking
+    attributes:
+      label: Compatibility impact
+      options:
+        - label: This would be a breaking change
+        - label: I'm willing to submit a PR for this
+          required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Contribution checklist
+      options:
+        - label: I searched for existing issues first
+          required: true

@@ -1,0 +1,52 @@
+# Normalize line endings so Linux/macOS contributors don't get CRLF noise
+* text=auto eol=lf
+
+# Explicit text normalization for source files
+*.java     text eol=lf
+*.html     text eol=lf
+*.js       text eol=lf
+*.ts       text eol=lf
+*.css      text eol=lf
+*.md       text eol=lf
+*.txt      text eol=lf
+*.yml      text eol=lf
+*.yaml     text eol=lf
+*.xml      text eol=lf
+*.json     text eol=lf
+*.sql      text eol=lf
+*.properties text eol=lf
+*.factories text eol=lf
+*.imports    text eol=lf
+.editorconfig text eol=lf
+.gitattributes text eol=lf
+.gitignore     text eol=lf
+LICENSE        text eol=lf
+CONTRIBUTING.md text eol=lf
+CHANGELOG.md    text eol=lf
+CODE_OF_CONDUCT.md text eol=lf
+SECURITY.md     text eol=lf
+MAINTAINERS.md  text eol=lf
+
+# Binary files never get EOL conversion or text diffs
+*.gif  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.ico  binary
+*.pdf  binary
+*.jar  binary
+*.class binary
+*.so   binary
+*.dll  binary
+*.dylib binary
+
+# Linguist tweaks for nicer GitHub blame/PR deltas
+*.xml linguist-detectable=true
+pom.xml linguist-language=XML
+*.sql linguist-detectable=true
+
+# Export-ignore for `git archive` so release tarballs stay lean
+.github export-ignore
+.editorconfig export-ignore
+.gitattributes export-ignore
+.gitignore export-ignore

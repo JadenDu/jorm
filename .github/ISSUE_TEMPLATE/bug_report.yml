@@ -1,0 +1,102 @@
+name: Bug report
+description: Report a reproducible defect in JORM
+title: "[bug] <short, specific summary>"
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report!
+        Please search existing issues first to avoid duplicates.
+        For security issues see `SECURITY.md` — do **not** file a public
+        bug report for security-sensitive problems.
+
+  - type: input
+    id: version
+    attributes:
+      label: JORM version
+      placeholder: "2.0.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Affected module
+      options:
+        - jorm (core)
+        - jorm-spring-boot-starter
+        - both
+    validations:
+      required: true
+
+  - type: input
+    id: jdk
+    attributes:
+      label: JDK version
+      placeholder: "Temurin 11.0.20"
+    validations:
+      required: true
+
+  - type: input
+    id: database
+    attributes:
+      label: Database / JDBC driver
+      placeholder: "MySQL 8.0.33, mysql-connector-j 8.0.33"
+    validations:
+      required: true
+
+  - type: input
+    id: dialect
+    attributes:
+      label: Dialect (if relevant)
+      placeholder: "MySqlDialect / default"
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: |
+        A self-contained snippet (entity + session calls) is ideal.
+        Skip the boilerplate that led up to the failure.
+      render: java
+    validations:
+      required: true
+
+  - type: textarea
+    id: stacktrace
+    attributes:
+      label: Stack trace / logs
+      render: shell
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: |
+        Workarounds, related issues, hypotheses about the root cause.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Contribution checklist
+      options:
+        - label: I searched for existing issues first
+          required: true
+        - label: This is not a security issue (see SECURITY.md)
+          required: true
