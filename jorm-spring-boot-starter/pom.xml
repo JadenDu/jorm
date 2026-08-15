@@ -1,368 +1,250 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>io.github.jadendu</groupId>
-	<artifactId>jorm-spring-boot-starter</artifactId>
-	<version>2.0.0</version>
-	<packaging>jar</packaging>
+    <!-- 继承聚合根 pom, 共享 groupId/version/Spring Boot parent 与公共配置 -->
+    <parent>
+        <groupId>io.github.jadendu</groupId>
+        <artifactId>jorm-parent</artifactId>
+        <version>2.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-	<!-- 项目信息 -->
-	<name>${project.groupId}:${project.artifactId}</name>
-	<description>Spring Boot Starter for JORM Framework</description>
-	<url>https://github.com/JadenDu/jorm</url>
+    <!-- 仅声明 artifactId, groupId/version 继承自父 pom -->
+    <artifactId>jorm-spring-boot-starter</artifactId>
+    <packaging>jar</packaging>
 
-	<!-- 继承Spring Boot父POM以简化配置 -->
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.7.6</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
+    <!-- 项目信息 -->
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>Spring Boot Starter for JORM Framework</description>
+    <url>https://github.com/JadenDu/jorm</url>
 
-	<properties>
-		<java.version>11</java.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<maven.compiler.source>${java.version}</maven.compiler.source>
-		<maven.compiler.target>${java.version}</maven.compiler.target>
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
 
-		<!-- Build-tools versions -->
-		<spotless.version>2.43.0</spotless.version>
-		<google-java-format.version>1.17.0</google-java-format.version>
-		<checkstyle.plugin.version>3.3.1</checkstyle.plugin.version>
-		<checkstyle.version>10.12.7</checkstyle.version>
-<spotbugs.plugin.version>4.8.6.5</spotbugs.plugin.version>
-        <spotbugs.version>4.8.6</spotbugs.version>
-		<jacoco.plugin.version>0.8.11</jacoco.plugin.version>
-		<apiguardian.version>1.1.2</apiguardian.version>
-		<junit.version>4.13.2</junit.version>
-		<junit-jupiter.version>5.9.3</junit-jupiter.version>
-	</properties>
+    <developers>
+        <developer>
+            <name>JadenDu</name>
+            <email>wy1903265502@163.com</email>
+        </developer>
+    </developers>
 
-	<!-- 开源协议 -->
-	<licenses>
-		<license>
-			<name>The Apache License, Version 2.0</name>
-			<url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-		</license>
-	</licenses>
+    <scm>
+        <url>https://github.com/JadenDu/jorm</url>
+        <connection>scm:git:https://github.com/JadenDu/jorm.git</connection>
+        <developerConnection>scm:git:git@github.com:JadenDu/jorm.git</developerConnection>
+    </scm>
 
-	<!-- 开发者信息 -->
-	<developers>
-		<developer>
-			<name>JadenDu</name>
-			<email>wy1903265502@163.com</email>
-		</developer>
-	</developers>
+    <dependencies>
+        <!-- Spring Boot自动配置 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        <!-- Spring Boot Actuator (optional): exposes JormHealthIndicator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-actuator</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- Spring JDBC 工具 -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>5.3.34</version>
+        </dependency>
+        <!-- 配置注解处理器 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <version>2.7.6</version>
+            <optional>true</optional>
+        </dependency>
+        <!-- 核心模块依赖 (版本由父 pom dependencyManagement 管理) -->
+        <dependency>
+            <groupId>io.github.jadendu</groupId>
+            <artifactId>jorm-core</artifactId>
+        </dependency>
+        <!-- API stability annotations -->
+        <dependency>
+            <groupId>org.apiguardian</groupId>
+            <artifactId>apiguardian-api</artifactId>
+        </dependency>
+        <!-- HikariCP 连接池 -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>4.0.3</version>
+        </dependency>
+        <!-- Redis 依赖 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+            <version>2.7.6</version>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>4.3.1</version>
+        </dependency>
+        <!-- 测试相关依赖 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- junit 单元测试 -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>1.17.6</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>1.17.6</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mysql</artifactId>
+            <version>1.17.6</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.redis</groupId>
+            <artifactId>testcontainers-redis</artifactId>
+            <version>2.2.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>it.ozimov</groupId>
+            <artifactId>embedded-redis</artifactId>
+            <version>0.7.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.15.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>8.0.33</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-	<!-- 版本控制 -->
-	<scm>
-		<url>https://github.com/JadenDu/jorm</url>
-		<connection>scm:git:https://github.com/JadenDu/jorm.git</connection>
-		<developerConnection>scm:git:git@github.com:JadenDu/jorm.git</developerConnection>
-	</scm>
+    <build>
+        <plugins>
+            <!-- 编译器插件确保Java 11兼容性 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <!-- ========================================== -->
+            <!-- Spotless: enforce a single code format.    -->
+            <!-- ========================================== -->
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+            </plugin>
+            <!-- ========================================== -->
+            <!-- Checkstyle: shared config under build-tools. -->
+            <!-- ========================================== -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <configLocation>${project.basedir}/../build-tools/checkstyle.xml</configLocation>
+                    <propertyExpansion>project.basedir=${project.basedir}</propertyExpansion>
+                    <consoleOutput>true</consoleOutput>
+                    <failOnViolation>true</failOnViolation>
+                    <violationSeverity>error</violationSeverity>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>checkstyle-validate</id>
+                        <phase>verify</phase>
+                        <goals><goal>check</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- ========================================== -->
+            <!-- SpotBugs: bug-pattern static analysis.      -->
+            <!-- ========================================== -->
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>Medium</threshold>
+                    <excludeFilterFile>${project.basedir}/../build-tools/spotbugs-exclusions.xml</excludeFilterFile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>spotbugs-check</id>
+                        <phase>verify</phase>
+                        <goals><goal>check</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- ========================================== -->
+            <!-- JaCoCo: coverage report (no strict gate;   -->
+            <!-- starter integration tests require live Redis) -->
+            <!-- ========================================== -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals><goal>prepare-agent</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- 源码 / Javadoc / GPG 签名: 配置来自父 pom pluginManagement -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+            </plugin>
+            <!-- 中央仓库发布插件 -->
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 
-	<dependencies>
-		<!-- Spring Boot自动配置 -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-autoconfigure</artifactId>
-		</dependency>
-		<!-- Spring Boot Actuator (optional): exposes JormHealthIndicator -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-actuator</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<!-- Spring JDBC 工具 -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-jdbc</artifactId>
-			<version>5.3.34</version>
-		</dependency>
-		<!-- 配置注解处理器 -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-configuration-processor</artifactId>
-			<version>2.7.6</version>
-			<optional>true</optional>
-		</dependency>
-		<!-- 核心模块依赖 -->
-		<dependency>
-			<groupId>io.github.jadendu</groupId>
-			<artifactId>jorm-core</artifactId>
-			<version>2.0.0</version>
-		</dependency>
-		<!-- API stability annotations -->
-		<dependency>
-			<groupId>org.apiguardian</groupId>
-			<artifactId>apiguardian-api</artifactId>
-			<version>${apiguardian.version}</version>
-		</dependency>
-		<!-- HikariCP 连接池 -->
-		<dependency>
-			<groupId>com.zaxxer</groupId>
-			<artifactId>HikariCP</artifactId>
-			<version>4.0.3</version>
-		</dependency>
-		<!-- Redis 依赖 -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-redis</artifactId>
-			<version>2.7.6</version>
-		</dependency>
-		<dependency>
-			<groupId>redis.clients</groupId>
-			<artifactId>jedis</artifactId>
-			<version>4.3.1</version>
-		</dependency>
-		<!-- 测试相关依赖 -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<!-- junit 单元测试 -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<version>${junit-jupiter.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.testcontainers</groupId>
-			<artifactId>testcontainers</artifactId>
-			<version>1.17.6</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.testcontainers</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<version>1.17.6</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.testcontainers</groupId>
-			<artifactId>mysql</artifactId>
-			<version>1.17.6</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.redis</groupId>
-			<artifactId>testcontainers-redis</artifactId>
-			<version>2.2.4</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>it.ozimov</groupId>
-			<artifactId>embedded-redis</artifactId>
-			<version>0.7.3</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>2.15.2</version>
-		</dependency>
-		<dependency>
-			<groupId>com.mysql</groupId>
-			<artifactId>mysql-connector-j</artifactId>
-			<version>8.0.33</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
-	<build>
-		<plugins>
-			<!-- 编译器插件确保Java 11兼容性 -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.11.0</version>
-				<configuration>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
-					<encoding>UTF-8</encoding>
-				</configuration>
-			</plugin>
-			<!-- ========================================== -->
-			<!-- Spotless: enforce a single code format.    -->
-			<!-- ========================================== -->
-			<plugin>
-				<groupId>com.diffplug.spotless</groupId>
-				<artifactId>spotless-maven-plugin</artifactId>
-				<version>${spotless.version}</version>
-				<configuration>
-					<java>
-						<googleJavaFormat>
-							<version>${google-java-format.version}</version>
-							<style>AOSP</style>
-						</googleJavaFormat>
-						<removeUnusedImports/>
-						<importOrder>
-							<order>java,javax,org,io,com,</order>
-						</importOrder>
-						<licenseHeader>
-							<content>// SPDX-License-Identifier: Apache-2.0</content>
-							<delimiter>package </delimiter>
-						</licenseHeader>
-						<trimTrailingWhitespace/>
-						<endWithNewline/>
-					</java>
-				</configuration>
-				<executions>
-					<execution>
-						<id>spotless-check</id>
-						<phase>verify</phase>
-						<goals><goal>check</goal></goals>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- ========================================== -->
-			<!-- Checkstyle: shared config under build-tools. -->
-			<!-- ========================================== -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>${checkstyle.plugin.version}</version>
-				<configuration>
-					<configLocation>${project.basedir}/../build-tools/checkstyle.xml</configLocation>
-					<propertyExpansion>project.basedir=${project.basedir}</propertyExpansion>
-					<consoleOutput>true</consoleOutput>
-					<failOnViolation>true</failOnViolation>
-					<violationSeverity>error</violationSeverity>
-				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>com.puppycrawl.tools</groupId>
-						<artifactId>checkstyle</artifactId>
-						<version>${checkstyle.version}</version>
-					</dependency>
-				</dependencies>
-				<executions>
-					<execution>
-						<id>checkstyle-validate</id>
-						<phase>verify</phase>
-						<goals><goal>check</goal></goals>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- ========================================== -->
-			<!-- SpotBugs: bug-pattern static analysis.      -->
-			<!-- ========================================== -->
-			<plugin>
-				<groupId>com.github.spotbugs</groupId>
-				<artifactId>spotbugs-maven-plugin</artifactId>
-				<version>${spotbugs.plugin.version}</version>
-				<configuration>
-					<effort>Max</effort>
-					<threshold>Medium</threshold>
-					<excludeFilterFile>${project.basedir}/../build-tools/spotbugs-exclusions.xml</excludeFilterFile>
-				</configuration>
-				<executions>
-					<execution>
-						<id>spotbugs-check</id>
-						<phase>verify</phase>
-						<goals><goal>check</goal></goals>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- ========================================== -->
-			<!-- JaCoCo: coverage report (no strict gate;   -->
-			<!-- starter integration tests require live Redis) -->
-			<!-- ========================================== -->
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>${jacoco.plugin.version}</version>
-				<executions>
-					<execution>
-						<id>prepare-agent</id>
-						<goals><goal>prepare-agent</goal></goals>
-					</execution>
-					<execution>
-						<id>report</id>
-						<phase>verify</phase>
-						<goals><goal>report</goal></goals>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- 源码和Javadoc -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>2.2.1</version>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<goals><goal>jar-no-fork</goal></goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.5.0</version>
-				<configuration>
-					<failOnError>false</failOnError>
-					<doclint>none</doclint>
-					<charset>UTF-8</charset>
-					<encoding>UTF-8</encoding>
-					<docencoding>UTF-8</docencoding>
-				</configuration>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals><goal>jar</goal></goals>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- gpg插件 -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-gpg-plugin</artifactId>
-				<version>1.5</version>
-				<executions>
-					<execution>
-						<id>sign-artifacts</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- 中央仓库发布插件 -->
-			<plugin>
-				<groupId>org.sonatype.central</groupId>
-				<artifactId>central-publishing-maven-plugin</artifactId>
-				<version>0.4.0</version>
-				<extensions>true</extensions>
-				<configuration>
-					<publishingServerId>central</publishingServerId>
-					<tokenAuth>true</tokenAuth>
-					<autoPublish>false</autoPublish>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-
-	<!-- 发布到Maven仓库 -->
-	<distributionManagement>
-		<snapshotRepository>
-			<id>central</id>
-			<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository>
-		<repository>
-			<id>central</id>
-			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
-	</distributionManagement>
 </project>

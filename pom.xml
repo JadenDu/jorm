@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- 继承 Spring Boot 父 POM, 由两个子模块共享 -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.7.6</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <!-- 聚合器坐标: 子模块继承 groupId / version -->
+    <groupId>io.github.jadendu</groupId>
+    <artifactId>jorm-parent</artifactId>
+    <version>2.0.0</version>
+    <packaging>pom</packaging>
+
+    <!-- 聚合的子模块; reactor 会按依赖拓扑顺序构建 (core -> starter) -->
+    <modules>
+        <module>jorm-core</module>
+        <module>jorm-spring-boot-starter</module>
+    </modules>
+
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>JORM 聚合构建 (jorm-core + jorm-spring-boot-starter)</description>
+    <url>https://github.com/JadenDu/jorm</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>JadenDu</name>
+            <email>wy1903265502@163.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>https://github.com/JadenDu/jorm</url>
+        <connection>scm:git:https://github.com/JadenDu/jorm.git</connection>
+        <developerConnection>scm:git:git@github.com:JadenDu/jorm.git</developerConnection>
+    </scm>
+
+    <properties>
+        <java.version>11</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- Build-tools versions (kept here so dependabot PRs human-readable) -->
+        <spotless.version>2.43.0</spotless.version>
+        <google-java-format.version>1.17.0</google-java-format.version>
+        <checkstyle.plugin.version>3.3.1</checkstyle.plugin.version>
+        <checkstyle.version>10.12.7</checkstyle.version>
+        <spotbugs.plugin.version>4.8.6.5</spotbugs.plugin.version>
+        <spotbugs.version>4.8.6</spotbugs.version>
+        <jacoco.plugin.version>0.8.11</jacoco.plugin.version>
+        <apiguardian.version>1.1.2</apiguardian.version>
+        <junit.version>4.13.2</junit.version>
+        <junit-jupiter.version>5.9.3</junit-jupiter.version>
+
+        <!-- jorm-core 覆盖率门槛: 见子模块注释 -->
+        <jacoco.line-coverage>0.40</jacoco.line-coverage>
+        <jacoco.branch-coverage>0.25</jacoco.branch-coverage>
+    </properties>
+
+    <!-- 统一管理版本: 子模块依赖时无需写 version -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- 让 starter 引用 core 时版本跟随聚合器 -->
+            <dependency>
+                <groupId>io.github.jadendu</groupId>
+                <artifactId>jorm-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apiguardian</groupId>
+                <artifactId>apiguardian-api</artifactId>
+                <version>${apiguardian.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${junit-jupiter.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- 上传到 Maven Central Portal -->
+    <distributionManagement>
+        <snapshotRepository>
+            <id>central</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>central</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- 编译器: 版本统一管理 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                        <encoding>UTF-8</encoding>
+                    </configuration>
+                </plugin>
+                <!-- Spotless: 统一代码格式 -->
+                <plugin>
+                    <groupId>com.diffplug.spotless</groupId>
+                    <artifactId>spotless-maven-plugin</artifactId>
+                    <version>${spotless.version}</version>
+                    <configuration>
+                        <java>
+                            <googleJavaFormat>
+                                <version>${google-java-format.version}</version>
+                                <style>AOSP</style>
+                            </googleJavaFormat>
+                            <removeUnusedImports/>
+                            <importOrder>
+                                <order>java,javax,org,io,com,</order>
+                            </importOrder>
+                            <licenseHeader>
+                                <content>// SPDX-License-Identifier: Apache-2.0</content>
+                                <delimiter>package </delimiter>
+                            </licenseHeader>
+                            <trimTrailingWhitespace/>
+                            <endWithNewline/>
+                        </java>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>spotless-check</id>
+                            <phase>verify</phase>
+                            <goals><goal>check</goal></goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!-- Checkstyle: 配置路径相对子模块 baserir, 故各子模块自行声明 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>${checkstyle.plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>${checkstyle.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <!-- SpotBugs: 配置路径相对子模块 baserir, 故各子模块自行声明 -->
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>${spotbugs.plugin.version}</version>
+                </plugin>
+                <!-- JaCoCo: 覆盖率门槛因模块而异, 各子模块自行声明 executions -->
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.plugin.version}</version>
+                </plugin>
+                <!-- Source / Javadoc / GPG: 公共发布配置 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>2.2.1</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals><goal>jar-no-fork</goal></goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.5.0</version>
+                    <configuration>
+                        <failOnError>false</failOnError>
+                        <doclint>none</doclint>
+                        <charset>UTF-8</charset>
+                        <encoding>UTF-8</encoding>
+                        <docencoding>UTF-8</docencoding>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals><goal>jar</goal></goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>1.5</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals><goal>sign</goal></goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!-- Central 发布: 各子模块自行激活 (extensions=true 会接管 deploy) -->
+                <plugin>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <version>0.4.0</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <publishingServerId>central</publishingServerId>
+                        <tokenAuth>true</tokenAuth>
+                        <autoPublish>false</autoPublish>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <!-- 聚合器自身是 packaging=pom, 跳过默认 deploy-plugin, 避免把根 pom 传到 Central -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
