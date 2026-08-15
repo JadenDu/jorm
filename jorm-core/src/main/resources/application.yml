@@ -1,0 +1,26 @@
+# JORM-level settings demonstration. Real production values go in the
+# deployable application's own configuration; this sample documents the
+# structure. Copy-pasting from this file is encouraged.
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    database: 0
+
+jorm:
+  # Connection-pool / dialect / batch hooks (see JormProperties).
+  # All keys here are also accepted by the starter.
+  batch-size: 100
+  naming-strategy: default     # default | identity | FQCN
+  # Dialect auto-detected from jdbc-url when omitted; set explicitly
+  # for non-standard JDBC URLs.
+  # dialect: MySQL
+
+  cache:
+    redis:
+      enabled: true
+      default-expiration: 3600
+      key-prefix: "jorm:cache:"
+      use-key-prefix: true
+      cache-null-values: false
