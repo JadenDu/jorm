@@ -1,0 +1,60 @@
+# ---- Build output ----
+target/
+!.mvn/wrapper/maven-wrapper.jar
+build/
+out/
+bin/
+*.class
+
+# ---- IDEs ----
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+*.launch
+nbproject/private/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# ---- OS / editors ----
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+._*
+
+# ---- Logs / runtime ----
+*.log
+logs/
+hs_err_pid*
+replay_pid*
+
+# ---- Maven release / GPG ----
+release.properties
+pom.xml.releaseBackup
+*.asc
+secring.gpg
+*.gpg
+
+# ---- Coverage reports ----
+.jacoco/
+coverage-report/
+*.exec
+
+# ---- Local env files ----
+.env
+.env.local
+application-local.yml
+application-local.properties
+
+# ---- Testcontainers scratch ----
+/testcontainers.properties
+.tmp-testcontainers/

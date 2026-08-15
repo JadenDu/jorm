@@ -1,0 +1,111 @@
+name: ci
+
+on:
+  push:
+    branches: [main, develop, "release/**"]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  MAVEN_OPTS: "-Dmaven.repo.frontend=true"
+  MAVEN_CLI_OPTS: "-B -ntp -Dmaven.test.failure.ignore=false -Dgpg.skip=true"
+
+jobs:
+  build:
+    name: Build & verify (JDK ${{ matrix.java }} on ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        java: [11, 17, 21]
+        include:
+          # Flag reference platform combo in summary views.
+          - java: 11
+            os: ubuntu-latest
+            primary: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+
+      - name: Show environment
+        run: |
+          java -version
+          mvn -v
+
+      - name: Spotless check (core)
+        if: always()
+        run: mvn -f jorm-core/pom.xml ${{ env.MAVEN_CLI_OPTS }} spotless:check
+
+      - name: Checkstyle (core)
+        if: always()
+        run: mvn -f jorm-core/pom.xml ${{ env.MAVEN_CLI_OPTS }} checkstyle:check
+
+      - name: SpotBugs (core)
+        if: always()
+        run: mvn -f jorm-core/pom.xml ${{ env.MAVEN_CLI_OPTS }} spotbugs:check
+
+      - name: Compile core
+        run: mvn -f jorm-core/pom.xml ${{ env.MAVEN_CLI_OPTS }} clean install -DskipTests
+
+      - name: Verify core (tests + coverage gate)
+        run: mvn -f jorm-core/pom.xml ${{ env.MAVEN_CLI_OPTS }} verify
+
+      - name: Compile starter
+        run: mvn -f jorm-spring-boot-starter/pom.xml ${{ env.MAVEN_CLI_OPTS }} clean install -DskipTests
+
+      - name: Verify starter (tests; no Docker available -> skip Testcontainers)
+        run: mvn -f jorm-spring-boot-starter/pom.xml ${{ env.MAVEN_CLI_OPTS }} verify -Dtest='!*IntegrationTest,*CRUDTest' -DfailIfNoTests=false
+
+      - name: Upload JaCoCo report (core)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-core-${{ matrix.os }}-jdk${{ matrix.java }}
+          path: jorm-core/target/site/jacoco/**
+          if-no-files-found: ignore
+
+      - name: Upload test logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs-${{ matrix.os }}-jdk${{ matrix.java }}
+          path: |
+            **/target/surefire-reports/*.txt
+            **/target/surefire-reports/*.xml
+          if-no-files-found: ignore
+
+  integration:
+    name: Integration tests (Testcontainers, JDK 11)
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request' || github.ref_protected
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 11
+          cache: maven
+      - name: Install core
+        run: mvn -f jorm-core/pom.xml ${{ env.MAVEN_CLI_OPTS }} clean install -DskipTests
+      - name: Run Testcontainers-based starter integration tests
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: "true"
+        run: mvn -f jorm-spring-boot-starter/pom.xml ${{ env.MAVEN_CLI_OPTS }} verify

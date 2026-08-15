@@ -1,0 +1,83 @@
+version: 2
+updates:
+  # Keep the core `jorm-core` module's Maven dependencies fresh.
+  - package-ecosystem: "maven"
+    directory: "/jorm-core"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      spring:
+        patterns:
+          - "org.springframework:*"
+      testing:
+        patterns:
+          - "org.junit*"
+          - "org.assertj*"
+          - "org.hamcrest*"
+      logging:
+        patterns:
+          - "org.slf4j:*"
+          - "ch.qos.logback:*"
+    ignore:
+      # Spring Boot 2.7.x is the supported baseline; do not auto-bump
+      # to 3.x without explicit migration work.
+      - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.springframework:spring-core"
+        update-types: ["version-update:semver-major"]
+    commit-message:
+      prefix: "deps(core)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "core"
+
+  # Keep the starter module's Maven dependencies fresh.
+  - package-ecosystem: "maven"
+    directory: "/jorm-spring-boot-starter"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      spring-boot:
+        patterns:
+          - "org.springframework.boot:*"
+          - "org.springframework.data:*"
+      cache:
+        patterns:
+          - "org.springframework.boot:spring-boot-starter-data-redis"
+          - "redis.clients:*"
+          - "com.redis:testcontainers-redis"
+          - "it.ozimov:embedded-redis"
+      testcontainers:
+        patterns:
+          - "org.testcontainers:*"
+    ignore:
+      - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "io.github.jadendu:jorm"
+        # Don't let dependabot bump the internal core dep on our own
+        # snapshot — we promote it manually when a core release ships.
+        update-types: ["version-update:semver-major"]
+    commit-message:
+      prefix: "deps(starter)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "starter"
+
+  # GitHub Actions themselves.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "deps(ci)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "ci"

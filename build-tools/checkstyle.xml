@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+    "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+    "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<!--
+  Shared Checkstyle configuration for the JORM project.
+  Based on Google Java Style with pragmatic relaxations:
+    * PascalCase chainable method names are allowed during the 2.x
+      deprecation window (see MethodName below).
+    * Method-line lengths up to 140 chars are allowed for readability
+      of builder-style tests.
+  Relaxed rules can be tightened in 3.0.
+-->
+<module name="Checker">
+  <property name="charset" value="UTF-8"/>
+  <property name="severity" value="warning"/>
+  <property name="fileExtensions" value="java, xml, properties"/>
+
+  <!-- Files must end with a newline. -->
+  <module name="NewlineAtEndOfFile">
+    <property name="lineSeparator" value="lf"/>
+  </module>
+
+  <!-- No tab characters anywhere. -->
+  <module name="FileTabCharacter">
+    <property name="eachLine" value="true"/>
+  </module>
+
+  <!-- Trim trailing whitespace. -->
+  <module name="RegexpSingleline">
+    <property name="format" value="\s+$"/>
+    <property name="message" value="Line has trailing whitespace."/>
+  </module>
+
+  <!-- License header enforcement is delegated to Spotless'
+       <licenseHeader>...</licenseHeader> rule in pom.xml (the rule
+       is more visible to contributors there, and avoids a brittle
+       checkstyle relative-path dependency).
+
+       If you want Checkstyle to enforce the header too, use the
+       RegexpHeader module and pass checkstyle.header.file via
+       propertyExpansion.
+  -->
+
+  <module name="LineLength">
+    <property name="max" value="140"/>
+    <property name="ignorePattern" value="^package.*|^import.*|^\s*\*\s*https?://"/>
+  </module>
+
+  <module name="TreeWalker">
+
+    <!-- ===== Imports ===== -->
+    <module name="AvoidStarImport"/>
+    <module name="RedundantImport"/>
+    <module name="UnusedImports">
+      <property name="processJavadoc" value="true"/>
+    </module>
+    <module name="ImportOrder">
+      <property name="groups" value="java,javax,org,io,com"/>
+      <property name="ordered" value="true"/>
+      <property name="separated" value="true"/>
+      <property name="option" value="top"/>
+    </module>
+
+    <!-- ===== Naming ===== -->
+    <module name="PackageName">
+      <property name="format" value="^[a-z]+(\.[a-z][a-zA-Z0-9_]*)*$"/>
+    </module>
+    <module name="TypeName">
+      <property name="format" value="^[A-Z][a-zA-Z0-9_]*$"/>
+    </module>
+    <module name="ConstantName">
+      <property name="format" value="^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$|^(log|LOGGER)$"/>
+    </module>
+    <module name="MemberName">
+      <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+    </module>
+    <module name="LocalVariableName"/>
+    <module name="ParameterName"/>
+    <module name="MethodName">
+      <!-- Allow PascalCase chainable methods during deprecation window. -->
+      <property name="format" value="^[a-z][a-zA-Z0-9]*$|^[A-Z][a-zA-Z0-9]*$"/>
+    </module>
+
+    <!-- ===== Whitespace / formatting ===== -->
+    <module name="WhitespaceAround">
+      <property name="allowEmptyConstructors" value="true"/>
+      <property name="allowEmptyMethods" value="true"/>
+    </module>
+    <module name="NeedBraces"/>
+    <module name="LeftCurly"/>
+    <module name="RightCurly">
+      <property name="option" value="same"/>
+    </module>
+    <module name="EmptyLineSeparator">
+      <property name="tokens" value="IMPORT,CLASS_DEF,INTERFACE_DEF,ENUM_DEF,STATIC_INIT,INSTANCE_INIT,METHOD_DEF,CTOR_DEF"/>
+      <property name="allowMultipleEmptyLines" value="false"/>
+    </module>
+
+    <!-- ===== Coding ===== -->
+    <module name="EmptyStatement"/>
+    <module name="EqualsHashCode"/>
+    <module name="SimplifyBooleanExpression"/>
+    <module name="SimplifyBooleanReturn"/>
+    <module name="OneStatementPerLine"/>
+    <module name="MultipleVariableDeclarations"/>
+    <module name="HideUtilityClassConstructor"/>
+
+    <!-- ===== Javadoc ===== -->
+    <module name="MissingJavadocType">
+      <property name="scope" value="public"/>
+    </module>
+
+  </module>
+</module>

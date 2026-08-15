@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security disclosure
+    url: mailto:wy1903265502@163.com
+    about: Report security vulnerabilities privately — see SECURITY.md.
+  - name: Question / discussion
+    url: https://github.com/JadenDu/jorm/discussions
+    about: Ask "how do I..." questions in GitHub Discussions.
