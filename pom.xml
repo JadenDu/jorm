@@ -214,10 +214,11 @@
                 <plugin>
                     <groupId>org.sonatype.central</groupId>
                     <artifactId>central-publishing-maven-plugin</artifactId>
-                    <version>0.4.0</version>
+                    <!-- 0.4.0 解析 Central API 新增的 "warnings" 字段会直接崩溃
+                         (UnrecognizedPropertyException), 必须 >= 0.5.0. -->
+                    <version>0.11.0</version>
                     <configuration>
                         <publishingServerId>central</publishingServerId>
-                        <tokenAuth>true</tokenAuth>
                         <autoPublish>false</autoPublish>
                     </configuration>
                 </plugin>

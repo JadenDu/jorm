@@ -1,36 +1,32 @@
-# Maintainers
+# 维护者
 
-This file lists the active maintainers of the JORM project. Maintainers
-have commit access and are responsible for review, releases, and
-community health. See `CONTRIBUTING.md` for the full process.
+本文件列出 JORM 项目的现任维护者。维护者拥有提交权限，
+负责评审、发布和社区健康。完整流程见 `CONTRIBUTING.md`。
 
-## Active maintainers
+## 现任维护者
 
-| Name       | GitHub        | Email                    | Focus                            |
-|------------|---------------|--------------------------|----------------------------------|
-| JadenDu    | @JadenDu   | wy1903265502@163.com     | Core ORM, dialects, releases     |
+| 姓名    | GitHub    | 邮箱                  | 负责方向                         |
+|---------|-----------|-----------------------|----------------------------------|
+| JadenDu | @JadenDu  | wy1903265502@163.com  | 核心 ORM、方言、发布             |
 
-## Emeritus maintainers
+## 荣誉维护者
 
-_None yet. We thank everyone who has contributed so far._
+_暂无。我们感谢迄今为止所有做出贡献的人。_
 
-## Becoming a maintainer
+## 如何成为维护者
 
-We invite consistent, high-quality contributors to join as maintainers.
-Expectations:
+我们会邀请持续贡献高质量内容的贡献者加入维护者团队。
+期望：
 
-- Authored or substantially reviewed ≥ 10 merged PRs.
-- Demonstrated understanding of the architecture (sessions, builders,
-  dialect SPI).
-- Responsive in code review for ≥ 1 month.
+- 提交或深度评审 ≥ 10 个已合并的 PR。
+- 对架构有充分理解（session、builder、方言 SPI）。
+- 在代码评审中保持响应 ≥ 1 个月。
 
-Nominations are discussed privately among the existing maintainers and
-require unanimous approval. New maintainers are announced in
-`CHANGELOG.md` under an `Unreleased` section.
+提名在现任维护者之间私下讨论，需一致同意。新维护者会在
+`CHANGELOG.md` 的 `Unreleased` 小节中公布。
 
-## Decision making
+## 决策机制
 
-Most decisions are made by lazy consensus in PR comments. If consensus
-cannot be reached, a maintainer may call for a formal vote among active
-maintainers. A simple majority of active maintainers carries the
-decision.
+大多数决策通过 PR 评论中的惰性共识（lazy consensus）做出。
+若无法达成共识，维护者可发起现任维护者的正式投票，
+简单多数即可通过。

@@ -1,20 +1,19 @@
-name: Bug report
-description: Report a reproducible defect in JORM
-title: "[bug] <short, specific summary>"
+name: Bug 报告
+description: 报告一个可复现的 JORM 缺陷
+title: "[bug] <简短、具体的标题>"
 labels: ["bug", "needs-triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to file a bug report!
-        Please search existing issues first to avoid duplicates.
-        For security issues see `SECURITY.md` — do **not** file a public
-        bug report for security-sensitive problems.
+        感谢你抽时间提交 bug 报告！
+        请先搜索已有 Issue 以避免重复。
+        安全问题请见 `SECURITY.md` —— 涉及安全的敏感问题**请勿**提交公开报告。
 
   - type: input
     id: version
     attributes:
-      label: JORM version
+      label: JORM 版本
       placeholder: "2.0.0"
     validations:
       required: true
@@ -22,18 +21,18 @@ body:
   - type: dropdown
     id: module
     attributes:
-      label: Affected module
+      label: 受影响的模块
       options:
-        - jorm (core)
+        - jorm-core（核心）
         - jorm-spring-boot-starter
-        - both
+        - 两者都有
     validations:
       required: true
 
   - type: input
     id: jdk
     attributes:
-      label: JDK version
+      label: JDK 版本
       placeholder: "Temurin 11.0.20"
     validations:
       required: true
@@ -41,7 +40,7 @@ body:
   - type: input
     id: database
     attributes:
-      label: Database / JDBC driver
+      label: 数据库 / JDBC 驱动
       placeholder: "MySQL 8.0.33, mysql-connector-j 8.0.33"
     validations:
       required: true
@@ -49,20 +48,20 @@ body:
   - type: input
     id: dialect
     attributes:
-      label: Dialect (if relevant)
+      label: 方言（如相关）
       placeholder: "MySqlDialect / default"
 
   - type: textarea
     id: expected
     attributes:
-      label: Expected behaviour
+      label: 期望行为
     validations:
       required: true
 
   - type: textarea
     id: actual
     attributes:
-      label: Actual behaviour
+      label: 实际行为
       render: shell
     validations:
       required: true
@@ -70,10 +69,10 @@ body:
   - type: textarea
     id: repro
     attributes:
-      label: Minimal reproduction
+      label: 最小化复现
       description: |
-        A self-contained snippet (entity + session calls) is ideal.
-        Skip the boilerplate that led up to the failure.
+        最好提供一段自包含的代码（实体 + session 调用）。
+        省略与故障无关的样板代码。
       render: java
     validations:
       required: true
@@ -81,22 +80,22 @@ body:
   - type: textarea
     id: stacktrace
     attributes:
-      label: Stack trace / logs
+      label: 堆栈 / 日志
       render: shell
 
   - type: textarea
     id: context
     attributes:
-      label: Additional context
+      label: 补充信息
       description: |
-        Workarounds, related issues, hypotheses about the root cause.
+        变通方案、相关 Issue、对根因的推测等。
 
   - type: checkboxes
     id: terms
     attributes:
-      label: Contribution checklist
+      label: 贡献检查清单
       options:
-        - label: I searched for existing issues first
+        - label: 我已先搜索过已有 Issue
           required: true
-        - label: This is not a security issue (see SECURITY.md)
+        - label: 这不是安全问题（见 SECURITY.md）
           required: true

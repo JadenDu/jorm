@@ -1,68 +1,61 @@
-# Security Policy
+# 安全策略
 
-## Supported Versions
+## 支持的版本
 
-JORM follows semantic versioning. Security fixes are applied to the
-latest minor release of the current major line. Older major lines are
-supported on a best-effort basis.
+JORM 遵循语义化版本。安全修复应用于当前主线的最新次版本；
+更早的主线按尽力而为原则支持。
 
-| Version | Supported |
-|---------|-----------|
-| 2.x     | Yes       |
-| 1.x     | Best-effort (security fixes only) |
-| < 1.0   | No        |
+| 版本 | 支持状态 |
+|------|----------|
+| 2.x  | 支持 |
+| 1.x  | 尽力而为（仅安全修复） |
+| < 1.0 | 不支持 |
 
-## Reporting a Vulnerability
+## 报告漏洞
 
-**Please do NOT open public GitHub issues for security problems.**
+**请勿为安全问题提交公开的 GitHub Issue。**
 
-Email security findings to **`wy1903265502@163.com`** with the subject
-`[JORM SECURITY] <short summary>`. If possible, encrypt your message
-using the maintainer's public GPG key — fingerprint available on the
-Maven Central artefacts.
+请将安全发现发送到 **`wy1903265502@163.com`**，邮件标题格式为
+`[JORM SECURITY] <简短摘要>`。如有可能，请使用维护者的公开 GPG
+密钥加密邮件——密钥指纹可在 Maven Central 构件上获取。
 
-Please include:
+请包含：
 
-1. Affected version(s) and the affected module (`jorm` or
-   `jorm-spring-boot-starter`).
-2. A minimal reproduction (stack trace, SQL, or a repo link).
-3. Your assessment of impact and any suggested mitigation.
-4. Whether the issue has been disclosed elsewhere.
+1. 受影响的版本与模块（`jorm-core` 或 `jorm-spring-boot-starter`）。
+2. 最小化复现（堆栈、SQL 或仓库链接）。
+3. 你对影响的评估以及建议的缓解措施。
+4. 该问题是否已在其他地方披露。
 
-### Response timeline
+### 响应时间线
 
-- **Acknowledgement**: within 72 hours.
-- **Initial assessment**: within 7 days.
-- **Fix ETA**: communicated based on severity. Critical issues are
-  prioritized; a security release is usually cut within 14 days.
+- **确认收到**：72 小时内。
+- **初步评估**：7 天内。
+- **修复 ETA**：按严重程度沟通。严重问题优先处理；
+  安全版本通常在 14 天内发布。
 
-Please give us a reasonable window to issue a fix before any public
-disclosure. We will credit reporters in the release notes and
-`CHANGELOG.md` unless they prefer to remain anonymous.
+请在公开披露前给我们一个合理的修复窗口。除非报告者希望匿名，
+我们会在发布说明和 `CHANGELOG.md` 中致谢报告者。
 
-## Scope
+## 范围
 
-In scope:
+在范围内：
 
-- SQL injection via the chainable query API.
-- Cache poisoning / deserialization issues in the Redis L2 layer.
-- Connection / transaction leaks that lead to DoS.
-- Privilege escalation via the Spring Boot starter auto-configuration.
+- 经由链式查询 API 的 SQL 注入。
+- Redis 二级缓存层的缓存投毒 / 反序列化问题。
+- 导致拒绝服务的连接 / 事务泄漏。
+- 经由 Spring Boot starter 自动装配的提权。
 
-Out of scope:
+不在范围内：
 
-- Vulnerabilities in dependencies (please report upstream and pin via
-  Dependabot PRs).
-- Social engineering of maintainers.
+- 依赖库自身的漏洞（请向上游报告，并通过 Dependabot PR 固定版本）。
+- 对维护者的社会工程攻击。
 
-## Hardening recommendations for users
+## 面向用户的加固建议
 
-- Run with the smallest possible HikariCP pool (`maximum-pool-size`)
-  sized to your workload.
-- If you enable the Redis L2 cache, isolate the Redis instance and
-  enable TLS where possible.
-- Restrict bound parameters to JDBC's `setObject` types via a custom
-  `TypeHandler` if you ingest untrusted column data.
-- Do not expose `JormTemplate` over a public API boundary without
-  input validation on `Where(...)` column names — the framework
-  whitelist-validates columns but cannot reason about your domain.
+- 按实际负载将 HikariCP 连接池（`maximum-pool-size`）配置到尽可能小。
+- 如启用 Redis 二级缓存，请隔离 Redis 实例并尽可能开启 TLS。
+- 若摄入不可信的列数据，请通过自定义 `TypeHandler` 将绑定参数
+  限制在 JDBC `setObject` 支持的类型内。
+- 不要在缺少对 `where(...)` 列名做输入校验的情况下将 `JormTemplate`
+  暴露到公开 API 边界——框架会按白名单校验列，
+  但无法理解你的业务语义。

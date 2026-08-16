@@ -1,28 +1,28 @@
-name: Feature request
-description: Suggest a new feature or improvement for JORM
-title: "[feat] <short, specific summary>"
+name: 功能建议
+description: 为 JORM 建议新功能或改进
+title: "[feat] <简短、具体的标题>"
 labels: ["enhancement", "needs-triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for the idea! Tell us what you'd like to see and why.
+        感谢你的想法！告诉我们你希望看到什么、以及为什么。
 
   - type: textarea
     id: problem
     attributes:
-      label: The problem
-      description: What are you trying to do that JORM currently makes hard?
+      label: 遇到的问题
+      description: 你想完成的事情中，哪些是 JORM 目前难以做到的？
     validations:
       required: true
 
   - type: textarea
     id: solution
     attributes:
-      label: Proposed solution
+      label: 建议的方案
       description: |
-        Sketch the API you'd like (pseudo-code is fine). Mention which
-        session it lives on (`FindSession`, `JormTemplate`, ...).
+        简述你期望的 API（伪代码即可）。说明它应该挂在哪个
+        Session 上（`FindSession`、`JormTemplate`...）。
       render: java
     validations:
       required: true
@@ -30,34 +30,34 @@ body:
   - type: textarea
     id: alternatives
     attributes:
-      label: Alternatives considered
+      label: 考虑过的替代方案
       description: |
-        Workarounds you're using today, third-party libs considered, etc.
+        目前在用的变通办法、考虑过的第三方库等。
 
   - type: dropdown
     id: module
     attributes:
-      label: Affected module
+      label: 受影响的模块
       options:
-        - jorm (core)
+        - jorm-core（核心）
         - jorm-spring-boot-starter
-        - both
+        - 两者都有
     validations:
       required: true
 
   - type: checkboxes
     id: breaking
     attributes:
-      label: Compatibility impact
+      label: 兼容性影响
       options:
-        - label: This would be a breaking change
-        - label: I'm willing to submit a PR for this
+        - label: 这将是一个破坏性变更
+        - label: 我愿意为此提交 PR
           required: false
 
   - type: checkboxes
     id: terms
     attributes:
-      label: Contribution checklist
+      label: 贡献检查清单
       options:
-        - label: I searched for existing issues first
+        - label: 我已先搜索过已有 Issue
           required: true
