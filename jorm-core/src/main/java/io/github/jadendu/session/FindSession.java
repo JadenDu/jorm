@@ -29,6 +29,8 @@ import io.github.jadendu.query.Pageable;
 import io.github.jadendu.session.base.BaseSession;
 import io.github.jadendu.session.factory.Jorm;
 import io.github.jadendu.sqlBuilder.FindBuilder;
+import io.github.jadendu.transaction.AfterCommitHooks;
+import io.github.jadendu.transaction.CurrentTransactionConnection;
 import io.github.jadendu.util.ResultSetMapper;
 
 /**
@@ -237,7 +239,7 @@ public class FindSession extends BaseSession<FindSession> {
         checkIfClosed();
         EntityModel model = EntityModelRegistry.get(clazz);
         String cacheKey = generateCacheKey(clazz);
-        if (CacheManager.isCacheEnabled()) {
+        if (CacheManager.isCacheEnabled() && !inActiveTransaction()) {
             Object cached =
                     CacheManager.getSecondLevelCache().get(model.entityClass().getName(), cacheKey);
             if (cached instanceof List) {
@@ -335,7 +337,7 @@ public class FindSession extends BaseSession<FindSession> {
         }
         EntityModel model = EntityModelRegistry.get(clazz);
         String cacheKey = generateCacheKey(clazz);
-        if (CacheManager.isCacheEnabled()) {
+        if (CacheManager.isCacheEnabled() && !inActiveTransaction()) {
             Object cached =
                     CacheManager.getSecondLevelCache().get(model.entityClass().getName(), cacheKey);
             if (cached != null) {
@@ -373,7 +375,10 @@ public class FindSession extends BaseSession<FindSession> {
             }
             try (ResultSet rs = stmt.executeQuery()) {
                 List<E> result = ResultSetMapper.mapToList(rs, clazz);
-                if (CacheManager.isCacheEnabled() && result != null && !result.isEmpty()) {
+                if (CacheManager.isCacheEnabled()
+                        && !inActiveTransaction()
+                        && result != null
+                        && !result.isEmpty()) {
                     CacheManager.getSecondLevelCache()
                             .put(model.entityClass().getName(), generateCacheKey(clazz), result);
                 }
@@ -428,6 +433,16 @@ public class FindSession extends BaseSession<FindSession> {
         // Delegate to ReflectionResultSetMapper's per-row API by constructing an
         // adapter. Cheapest path: re-use mapToEntity with a one-row cursor.
         return ResultSetMapper.mapToEntity(rs, cls);
+    }
+
+    /**
+     * Active transactions may hold uncommitted state — never read from or populate the L2 cache
+     * mid-transaction, otherwise uncommitted rows leak into the shared cache and read-your-own
+     * writes go stale.
+     */
+    private static boolean inActiveTransaction() {
+        return CurrentTransactionConnection.hasTransaction()
+                || AfterCommitHooks.isSpringTransactionActive();
     }
 
     private String generateCacheKey(Class<?> cls) {

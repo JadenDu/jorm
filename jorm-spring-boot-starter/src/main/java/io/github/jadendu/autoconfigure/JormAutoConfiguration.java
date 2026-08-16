@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -97,7 +98,10 @@ public class JormAutoConfiguration implements SmartInitializingSingleton {
 
     @Bean
     @ConditionalOnMissingBean
-    public PlatformTransactionManager transactionManager(DataSource dataSource) {
+    public PlatformTransactionManager transactionManager(
+            // 必须绑定"原始" DataSource: TransactionAwareDataSourceProxy 内部以 target
+            // DataSource 为事务资源 key, 若绑到代理本身, Session 连接将无法加入 Spring 事务.
+            @Qualifier("dataSource") DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
     }
 

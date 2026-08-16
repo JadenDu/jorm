@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import io.github.jadendu.exception.ErrorCode;
 import io.github.jadendu.exception.JormException;
 import io.github.jadendu.session.factory.Jorm;
+import io.github.jadendu.transaction.AfterCommitHooks;
 import io.github.jadendu.transaction.CurrentTransactionConnection;
 
 /**
@@ -68,7 +69,8 @@ public abstract class BaseSession<T extends BaseSession<T>> implements AutoClose
     protected BaseSession() {
         this(Jorm.getConnection());
         this.isManagedConnection = true;
-        if (!CurrentTransactionConnection.hasTransaction()) {
+        if (!CurrentTransactionConnection.hasTransaction()
+                && !AfterCommitHooks.isSpringTransactionActive()) {
             try {
                 this.connection.setAutoCommit(true);
             } catch (SQLException e) {
@@ -155,7 +157,11 @@ public abstract class BaseSession<T extends BaseSession<T>> implements AutoClose
             return;
         }
         try {
-            if (!connection.isClosed() && !connection.getAutoCommit()) {
+            // Spring owns commit/rollback for the tx-bound connection; rolling back here would
+            // abort the surrounding @Transactional block mid-flight.
+            if (!AfterCommitHooks.isSpringTransactionActive()
+                    && !connection.isClosed()
+                    && !connection.getAutoCommit()) {
                 connection.rollback();
                 log.debug("Non-tx session: rolled back on close (commit must be explicit)");
             }

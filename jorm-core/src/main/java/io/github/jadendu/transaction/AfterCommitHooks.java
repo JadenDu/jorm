@@ -83,6 +83,21 @@ public final class AfterCommitHooks {
     }
 
     /**
+     * Whether a Spring-managed transaction is currently active on this thread. Always {@code false}
+     * when Spring is absent from the classpath or detection fails.
+     */
+    @API(status = API.Status.INTERNAL)
+    public static boolean isSpringTransactionActive() {
+        SpringSupport s = resolveSupport();
+        try {
+            return s != null && s.isTransactionActive();
+        } catch (Throwable t) {
+            log.debug("Spring transaction detection failed", t);
+            return false;
+        }
+    }
+
+    /**
      * Drain the JORM-managed callback list. Called by {@link TransactionTemplate} right after its
      * commit succeeds — never to be invoked by user code.
      */

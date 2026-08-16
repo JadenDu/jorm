@@ -68,6 +68,12 @@ public final class Jorm {
         return dataSource != null;
     }
 
+    /** Read the active {@link DataSource} (or {@code null} when unconfigured). */
+    @API(status = API.Status.STABLE)
+    public static DataSource dataSource() {
+        return dataSource;
+    }
+
     /** Read/replace the active dialect; defaults to {@link DefaultDialect}. */
     @API(status = API.Status.STABLE)
     public static Dialect dialect() {

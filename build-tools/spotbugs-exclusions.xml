@@ -63,7 +63,7 @@
        a static volatile field. Documented singleton contract. -->
   <Match>
     <Class name="io.github.jadendu.session.factory.Jorm"/>
-    <Bug pattern="EI_EXPOSE_STATIC_REP2,MS_SHOULD_BE_FINAL,MS_CANNOT_BE_FINAL"/>
+    <Bug pattern="EI_EXPOSE_STATIC_REP2,MS_SHOULD_BE_FINAL,MS_CANNOT_BE_FINAL,MS_EXPOSE_REP"/>
   </Match>
 
   <!-- CacheManager + StatisticsRegistry are process-wide singleton holders

@@ -22,9 +22,15 @@ import io.github.jadendu.session.factory.Jorm;
 public class MySQLJormTest {
     private DataSource dataSource;
     private Connection connection;
+    private DataSource originalDataSource;
+    private boolean originalCacheEnabled;
 
     @BeforeEach
     void setUp() throws SQLException {
+        // 保存全局状态, 用例结束后恢复, 避免污染同 JVM 中后续运行的其他用例.
+        originalDataSource = Jorm.dataSource();
+        originalCacheEnabled = CacheManager.isCacheEnabled();
+
         // 创建MySQL数据源
         dataSource =
                 new DriverManagerDataSource(
@@ -52,6 +58,10 @@ public class MySQLJormTest {
         if (connection != null && !connection.isClosed()) {
             connection.close();
         }
+        if (originalDataSource != null) {
+            Jorm.setDataSource(originalDataSource);
+        }
+        CacheManager.setCacheEnabled(originalCacheEnabled);
     }
 
     @Test

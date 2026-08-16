@@ -15,7 +15,9 @@ env:
   MAVEN_OPTS: "-Dmaven.repo.frontend=true"
   # 聚合构建: 在根 pom 上跑, reactor 自动按 jorm-core -> jorm-spring-boot-starter
   # 顺序构建, 无需手动两段式.
-  MAVEN_CLI_OPTS: "-B -ntp -Dmaven.test.failure.ignore=false -Dgpg.skip=true"
+  # 注意: -D 参数必须带双引号, 否则 windows runner 的 PowerShell 会在 "=" 处
+  # 把参数拆开, 导致 Maven 报 "Unknown lifecycle phase" 错误.
+  MAVEN_CLI_OPTS: -B -ntp "-Dmaven.test.failure.ignore=false" "-Dgpg.skip=true"
 
 jobs:
   build:
@@ -68,10 +70,11 @@ jobs:
       - name: Verify & install core (tests + coverage gate)
         run: mvn ${{ env.MAVEN_CLI_OPTS }} -pl jorm-core -am install
 
-      # Starter: 跑过滤后的测试, 跳过需要 Docker 的 Testcontainers/Redis 集成测试
-      # (integration job 单独跑它们). core 已 install, 无需 -am 重建.
-      - name: Verify starter (filtered tests; no Docker -> skip Testcontainers)
-        run: mvn ${{ env.MAVEN_CLI_OPTS }} -pl jorm-spring-boot-starter verify -Dtest='!*IntegrationTest,*CRUDTest' -DfailIfNoTests=false
+      # Starter: 静态检查 (checkstyle/spotbugs/jacoco) 编译验证.
+      # starter 的测试全部依赖 localhost MySQL + Redis, 移到 integration job
+      # (那里有 MySQL 服务容器) 统一执行; windows runner 无法挂服务容器.
+      - name: Verify starter (static checks; tests run in integration job)
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} -pl jorm-spring-boot-starter verify -DskipTests
 
       - name: Upload JaCoCo report (core)
         if: always()
@@ -92,10 +95,25 @@ jobs:
           if-no-files-found: ignore
 
   integration:
-    name: Integration tests (Testcontainers, JDK 11)
+    name: Integration tests (MySQL + Redis, JDK 11)
     runs-on: ubuntu-latest
     needs: build
     if: github.event_name == 'pull_request' || github.ref_protected
+    # starter 测试直连 localhost:3306 (库 orm, root/root), 用服务容器提供 MySQL;
+    # 嵌入式 Redis 直接用 runner 自带的 redis-server.
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: orm
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -105,7 +123,11 @@ jobs:
           distribution: temurin
           java-version: 11
           cache: maven
-      - name: Run Testcontainers-based starter integration tests
-        env:
-          TESTCONTAINERS_RYUK_DISABLED: "true"
+      - name: Create users table
+        run: >-
+          docker run --rm --network host mysql:8.0
+          mysql -h 127.0.0.1 -uroot -proot orm
+          -e "CREATE TABLE IF NOT EXISTS users (id BIGINT PRIMARY KEY AUTO_INCREMENT,
+          user_name VARCHAR(255), age INT, status VARCHAR(255), department VARCHAR(255))"
+      - name: Run starter integration tests (MySQL service + embedded Redis)
         run: mvn ${{ env.MAVEN_CLI_OPTS }} -pl jorm-spring-boot-starter -am verify

@@ -6,11 +6,15 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
 import java.util.Objects;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import io.github.jadendu.entity.User;
 import io.github.jadendu.session.FindSession;
@@ -22,13 +26,27 @@ public class CacheIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired private TransactionalService transactionalService;
 
+    @Autowired private JdbcTemplate jdbcTemplate;
+
+    @Autowired private PlatformTransactionManager transactionManager;
+
     @BeforeEach
     void clearCache() {
         Objects.requireNonNull(redisTemplate.getConnectionFactory()).getConnection().flushAll();
     }
 
+    @AfterEach
+    void cleanTable() {
+        // 非事务用例的数据会真实提交, 清理避免影响其他用例和重复运行.
+        // Hikari 默认 autoCommit=false, DELETE 必须显式走事务提交才生效.
+        TransactionTemplate tx = new TransactionTemplate(transactionManager);
+        tx.executeWithoutResult(
+                status ->
+                        jdbcTemplate.update(
+                                "DELETE FROM users WHERE user_name IN ('CachedUser', 'ToUpdateUser')"));
+    }
+
     @Test
-    @Transactional
     void testQueryResultCached() {
         User user = new User("CachedUser", 40, "active");
         transactionalService.saveUser(user);
