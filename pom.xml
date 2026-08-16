@@ -99,18 +99,6 @@
         </dependencies>
     </dependencyManagement>
 
-    <!-- 上传到 Maven Central Portal -->
-    <distributionManagement>
-        <snapshotRepository>
-            <id>central</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>central</id>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
     <build>
         <pluginManagement>
             <plugins>
@@ -237,6 +225,12 @@
         </pluginManagement>
 
         <plugins>
+            <!-- 根 pom 自身也是发布构件 (packaging=pom), 必须与其他模块一样声明 GPG
+                 签名, 否则 Central 校验报 "Missing signature for jorm-parent-x.y.z.pom". -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+            </plugin>
             <!-- Central 发布: extensions=true 让该插件接管整个 reactor 的 deploy,
                  把 jorm-parent + jorm-core + jorm-spring-boot-starter 三个 GAV
                  打包成一个 deployment 推到 Central Portal。子模块无需再重复声明。 -->
