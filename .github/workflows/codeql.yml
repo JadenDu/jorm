@@ -42,9 +42,12 @@ jobs:
           queries: +security-and-quality
 
       - name: Build (skip tests for speed)
-        run: |
-          mvn -f jorm-core/pom.xml -B -ntp -DskipTests -Dgpg.skip=true clean install
-          mvn -f jorm-spring-boot-starter/pom.xml -B -ntp -DskipTests -Dgpg.skip=true clean compile
+        run: >-
+          mvn -B -ntp -DskipTests -Dgpg.skip=true
+          -Dspotless.check.skip=true -Dcheckstyle.skip=true -Dspotbugs.skip=true
+          clean install
+        # 从根聚合 pom 构建: -f 子模块方式不会 install jorm-parent 到 .m2,
+        # 导致 starter 解析 jorm-core 的 artifact descriptor 时找不到 parent pom.
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v3
