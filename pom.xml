@@ -56,7 +56,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- Build-tools versions (kept here so dependabot PRs human-readable) -->
-        <spotless.version>2.43.0</spotless.version>
+        <spotless.version>3.9.0</spotless.version>
         <google-java-format.version>1.17.0</google-java-format.version>
         <checkstyle.plugin.version>3.3.1</checkstyle.plugin.version>
         <checkstyle.version>10.12.7</checkstyle.version>
