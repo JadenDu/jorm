@@ -49,15 +49,14 @@
     </properties>
 
     <dependencies>
-        <!-- API stability annotations (STABLE / EXPERIMENTAL / INTERNAL). -->
+        <!-- API 稳定性注解 (STABLE / EXPERIMENTAL / INTERNAL)。 -->
         <dependency>
             <groupId>org.apiguardian</groupId>
             <artifactId>apiguardian-api</artifactId>
         </dependency>
 
-        <!-- Optional Spring support. Provided scope so the core artefact
-             stays framework-neutral; users only see Spring types when
-             they actually depend on them. -->
+        <!-- 可选的 Spring 支持。采用 provided 作用域,使核心构件保持框架中立;
+             用户只有真正依赖 Spring 时才会接触到这些类型。 -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
@@ -77,7 +76,7 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- SLF4J logging surface. -->
+        <!-- SLF4J 日志门面。 -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -123,14 +122,14 @@
                 <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
             <!-- ========================================== -->
-            <!-- Spotless: enforce a single code format.    -->
+            <!-- Spotless: 统一代码格式。                    -->
             <!-- ========================================== -->
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
             </plugin>
             <!-- ========================================== -->
-            <!-- Checkstyle: shared config under build-tools. -->
+            <!-- Checkstyle: 共享配置位于 build-tools 下。 -->
             <!-- ========================================== -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -152,7 +151,7 @@
                 </executions>
             </plugin>
             <!-- ========================================== -->
-            <!-- SpotBugs: bug-pattern static analysis.      -->
+            <!-- SpotBugs: 缺陷模式静态分析。                -->
             <!-- ========================================== -->
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
@@ -171,7 +170,7 @@
                 </executions>
             </plugin>
             <!-- ========================================== -->
-            <!-- JaCoCo: coverage report + gate.             -->
+            <!-- JaCoCo: 覆盖率报告 + 门槛。                 -->
             <!-- ========================================== -->
             <plugin>
                 <groupId>org.jacoco</groupId>

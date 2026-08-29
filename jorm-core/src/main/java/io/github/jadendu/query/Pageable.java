@@ -4,11 +4,11 @@ package io.github.jadendu.query;
 import org.apiguardian.api.API;
 
 /**
- * Pagination request: zero-based {@link #pageNumber()} and {@link #pageSize()}. Instances are
- * immutable and thread-safe.
+ * 分页请求:从零开始的 {@link #pageNumber()} 和 {@link #pageSize()}。实例
+ * 不可变且线程安全。
  *
- * <p>Migrated from the legacy {@code Limit (offset, count)} flat call to a richer abstraction; the
- * underlying builders still receive {@code limit}/{@code offset} ints.
+ * <p>从旧的 {@code Limit (offset, count)} 扁平调用迁移到更丰富的抽象;底层
+ * 构建器仍然接收 {@code limit}/{@code offset} 整数。
  *
  * @author JadenDu
  */
@@ -29,7 +29,7 @@ public final class Pageable {
         this.sort = sort == null ? Sort.unsorted() : sort;
     }
 
-    /** Page zero starts at the first row. */
+    /** 第 0 页从第一行开始。 */
     @API(status = API.Status.STABLE)
     public static Pageable of(int pageNumber, int pageSize) {
         return new Pageable(pageNumber, pageSize, Sort.unsorted());
@@ -45,12 +45,12 @@ public final class Pageable {
         return new Pageable(0, pageSize, Sort.unsorted());
     }
 
-    /** Zero-based page index. */
+    /** 从零开始的页码。 */
     public int pageNumber() {
         return pageNumber;
     }
 
-    /** Maximum number of rows per page. */
+    /** 每页最大行数。 */
     public int pageSize() {
         return pageSize;
     }
@@ -59,12 +59,12 @@ public final class Pageable {
         return sort;
     }
 
-    /** Row offset, i.e. {@code pageNumber * pageSize}. */
+    /** 行偏移量,即 {@code pageNumber * pageSize}。 */
     public int offset() {
         return pageNumber * pageSize;
     }
 
-    /** Synthesize a {@link Pageable} for the next page. */
+    /** 为下一页构造一个 {@link Pageable}。 */
     public Pageable next() {
         return new Pageable(pageNumber + 1, pageSize, sort);
     }

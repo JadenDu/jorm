@@ -7,8 +7,8 @@ import io.github.jadendu.exception.ErrorCode;
 import io.github.jadendu.exception.JormException;
 
 /**
- * Tiny pre-condition helper for non-null assertions. Richer SQL validators are now in {@link
- * SqlValidator}; this class is preserved for backward compatibility with 1.x callers.
+ * 用于非空断言的小型前置条件辅助类。更完善的 SQL 校验器现位于 {@link
+ * SqlValidator};保留此类是为了与 1.x 调用方保持向后兼容。
  *
  * @author JadenDu
  */
@@ -17,7 +17,7 @@ public final class AssertUtils {
 
     private AssertUtils() {}
 
-    /** Throw {@code JormException(code)} when {@code obj} is null. */
+    /** 当 {@code obj} 为 null 时抛出 {@code JormException(code)}。 */
     public static void throwAway(Object obj, ErrorCode code) {
         if (obj == null) {
             throw new JormException(code);

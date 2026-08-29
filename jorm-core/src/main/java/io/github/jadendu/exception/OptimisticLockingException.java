@@ -4,11 +4,10 @@ package io.github.jadendu.exception;
 import org.apiguardian.api.API;
 
 /**
- * Thrown by optimistic-locking-aware {@code UPDATE}s whose version check did not match the row in
- * storage.
+ * 由支持乐观锁的 {@code UPDATE} 在版本检查与存储中的行不一致时抛出。
  *
- * <p>JORM does not yet auto-increment version columns itself — the exception is reserved for the
- * planned {@code @Version} feature and emitted explicitly by user-supplied code in the meantime.
+ * <p>JORM 目前还不会自行自动递增版本列——该异常为计划中的 {@code @Version} 功能保留,
+ * 现阶段由用户提供的代码显式抛出。
  *
  * @author JadenDu
  */

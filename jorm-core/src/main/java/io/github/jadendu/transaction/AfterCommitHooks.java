@@ -11,28 +11,28 @@ import org.slf4j.LoggerFactory;
 import io.github.jadendu.transaction.AfterCommitHooks.SpringSupport;
 
 /**
- * Central post-commit callback registry — JORM's hinge for cache eviction.
+ * 提交后回调的中央注册表——JORM 缓存失效的关键枢纽。
  *
- * <p>Any code that wants to "do something only after the current transaction commits" should call
- * {@link #register(Runnable)} — the dispatcher figures out which environment is active:
+ * <p>任何想要"仅在当前事务提交后才执行某些操作"的代码都应调用
+ * {@link #register(Runnable)}——调度器会判断当前处于哪种环境：
  *
  * <ul>
- *   <li><b>Spring {@code @Transactional}</b> — registers a {@code TransactionSynchronization} via
+ *   <li><b>Spring {@code @Transactional}</b>——通过
  *       {@link
  *       org.springframework.transaction.support.TransactionSynchronizationManager#registerSynchronization}
- *       so Spring fires the callback after the real commit, regardless of nested propagation. This
- *       avoids the 1.x bug where cache regions were cleared <em>before</em> the transaction
- *       committed.
- *   <li><b>JORM-managed {@link TransactionTemplate} / {@link TransactionManager}</b> — buffers the
- *       callback in a thread-local list; {@code TransactionTemplate.execute()} drains and runs it
- *       after its commit succeeds.
- *   <li><b>No active transaction</b> — runs the callback immediately and logs any failures
- *       (preserves the legacy 1.x behaviour).
+ *       注册一个 {@code TransactionSynchronization}，使 Spring 在真正提交后触发回调，无论嵌套传播
+ *       方式如何。这避免了 1.x 版本中缓存区域在事务<em>提交之前</em>
+ *       就被清空的 bug。
+ *   <li><b>JORM 管理的 {@link TransactionTemplate} / {@link TransactionManager}</b>——将回调缓冲到
+ *       线程本地列表中；{@code TransactionTemplate.execute()} 在其提交成功后
+ *       取出并执行这些回调。
+ *   <li><b>无活动事务</b>——立即执行回调并记录任何失败
+ *       （保留 1.x 旧版行为）。
  * </ul>
  *
- * <p>Spring is detected via {@code Class.forName}; its absence on the classpath is normal and never
- * throws. The Spring integration class is loaded on demand, never via static initialiser, so core
- * users without Spring on the classpath pay no risks.
+ * <p>通过 {@code Class.forName} 检测 Spring；其不在 classpath 上是正常情况，永远不会
+ * 抛出异常。Spring 集成类按需加载，绝不通过静态初始化器加载，因此核心
+ * 用户即使 classpath 上没有 Spring 也不会有任何风险。
  *
  * @author JadenDu
  */
@@ -49,8 +49,8 @@ public final class AfterCommitHooks {
     private AfterCommitHooks() {}
 
     /**
-     * Register a callback to run after the current transaction commits. If no transaction is
-     * active, run immediately and best-effort log any failure.
+     * 注册一个在当前事务提交后执行的回调。如果没有活动事务，
+     * 则立即执行，并尽力记录任何失败。
      */
     @API(status = API.Status.STABLE)
     public static void register(Runnable callback) {
@@ -66,7 +66,7 @@ public final class AfterCommitHooks {
                 log.warn(
                         "Spring after-commit registration failed; falling back to Jorm thread-local",
                         t);
-                // fall through
+                // 继续向下执行
             }
         }
         if (CurrentTransactionConnection.hasTransaction()) {
@@ -78,13 +78,13 @@ public final class AfterCommitHooks {
             callbacks.add(callback);
             return;
         }
-        // No transaction: run now.
+        // 无事务：立即执行。
         runQuietly(callback);
     }
 
     /**
-     * Whether a Spring-managed transaction is currently active on this thread. Always {@code false}
-     * when Spring is absent from the classpath or detection fails.
+     * 当前线程上是否存在 Spring 管理的事务。当 classpath 中没有 Spring
+     * 或检测失败时，始终为 {@code false}。
      */
     @API(status = API.Status.INTERNAL)
     public static boolean isSpringTransactionActive() {
@@ -98,8 +98,8 @@ public final class AfterCommitHooks {
     }
 
     /**
-     * Drain the JORM-managed callback list. Called by {@link TransactionTemplate} right after its
-     * commit succeeds — never to be invoked by user code.
+     * 取出 JORM 管理的回调列表。由 {@link TransactionTemplate} 在其提交成功后立即调用——
+     * 用户代码不得调用。
      */
     static List<Runnable> drain() {
         List<Runnable> callbacks = JORM_CALLBACKS.get();
@@ -108,7 +108,7 @@ public final class AfterCommitHooks {
     }
 
     /**
-     * Run the supplied callbacks, swallowing exceptions so failures cannot break the commit caller.
+     * 执行提供的回调，吞掉异常，使失败不会破坏提交调用方。
      */
     static void flush(List<Runnable> callbacks) {
         if (callbacks == null || callbacks.isEmpty()) return;
@@ -153,7 +153,7 @@ public final class AfterCommitHooks {
         return support;
     }
 
-    /** Test-only hook to forget Spring presence (e.g., tests that inject mocks). */
+    /** 仅用于测试的钩子，用于清除 Spring 检测结果（例如注入 mock 的测试）。 */
     static void reset() {
         synchronized (AfterCommitHooks.class) {
             JORM_CALLBACKS.remove();
@@ -162,7 +162,7 @@ public final class AfterCommitHooks {
         }
     }
 
-    /** Strategy interface — implementations live in a separate class that imports Spring types. */
+    /** 策略接口——实现位于单独导入 Spring 类型的类中。 */
     public interface SpringSupport {
         boolean isTransactionActive();
 

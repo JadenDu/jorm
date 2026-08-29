@@ -6,9 +6,9 @@ import java.util.stream.Collectors;
 import org.apiguardian.api.API;
 
 /**
- * Static INSERT builder. Delegates column-resolution to the cached {@link
- * io.github.jadendu.entity.EntityModel} (which uses the configured {@link
- * io.github.jadendu.entity.naming.NamingStrategy}).
+ * 静态 INSERT 构建器。将列解析委托给缓存的 {@link
+ * io.github.jadendu.entity.EntityModel}（它使用配置的 {@link
+ * io.github.jadendu.entity.naming.NamingStrategy}）。
  *
  * @author JadenDu
  */

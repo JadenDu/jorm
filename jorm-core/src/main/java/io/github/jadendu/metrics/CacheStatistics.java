@@ -6,9 +6,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apiguardian.api.API;
 
 /**
- * Counters for L2 cache behaviour. Populated mostly through the {@link
- * io.github.jadendu.cache.MeasuringSecondLevelCache} decorator, which is applied automatically by
- * {@link io.github.jadendu.cache.CacheManager}.
+ * 二级缓存行为计数器。主要通过 {@link
+ * io.github.jadendu.cache.MeasuringSecondLevelCache} 装饰器填充,该装饰器由
+ * {@link io.github.jadendu.cache.CacheManager} 自动应用。
  *
  * @author JadenDu
  */

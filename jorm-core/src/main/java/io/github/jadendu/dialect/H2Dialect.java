@@ -6,9 +6,9 @@ import java.sql.SQLException;
 import org.apiguardian.api.API;
 
 /**
- * Dialect for the H2 in-memory database. Works in both {@code MySQL} and {@code PostgreSQL}
- * compatibility modes. H2 surfaces duplicate-key violations with SQL-state {@code 23505}
- * (PostgreSQL-style) or {@code 23506} depending on the constraint.
+ * H2 内存数据库的方言。可在 {@code MySQL} 与 {@code PostgreSQL} 兼容模式下工作。
+ * 根据约束类型的不同,H2 以 SQL 状态 {@code 23505}(PostgreSQL 风格)或 {@code 23506}
+ * 呈现重复键违规。
  *
  * @author JadenDu
  */
@@ -17,7 +17,7 @@ public class H2Dialect implements Dialect {
 
     private static final long serialVersionUID = 1L;
 
-    /** Singleton instance. */
+    /** 单例实例。 */
     public static final H2Dialect INSTANCE = new H2Dialect();
 
     @Override
@@ -46,9 +46,9 @@ public class H2Dialect implements Dialect {
             return false;
         }
         String sqlState = e.getSQLState();
-        // 23505: unique constraint / primary key violation
-        // 23506: referential constraint violation (still integrity, but
-        // not strictly dup-key — excluded to stay conservative).
+        // 23505:唯一约束 / 主键违规
+        // 23506:引用约束违规(仍属完整性错误,但
+        // 不严格属于重复键——为保持保守而排除)。
         return "23505".equals(sqlState);
     }
 

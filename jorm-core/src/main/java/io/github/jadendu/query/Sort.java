@@ -7,7 +7,7 @@ import java.util.List;
 import org.apiguardian.api.API;
 
 /**
- * Order-by definition for paginated queries.
+ * 分页查询的排序(ORDER BY)定义。
  *
  * @author JadenDu
  */
@@ -21,25 +21,25 @@ public final class Sort {
                 orders == null ? Collections.emptyList() : Collections.unmodifiableList(orders);
     }
 
-    /** Empty sort — emit no {@code ORDER BY} clause. */
+    /** 空排序 —— 不生成任何 {@code ORDER BY} 子句。 */
     @API(status = API.Status.STABLE)
     public static Sort unsorted() {
         return new Sort(Collections.emptyList());
     }
 
-    /** Ascending sort by {@code column}. */
+    /** 按 {@code column} 升序排序。 */
     @API(status = API.Status.STABLE)
     public static Sort asc(String column) {
         return new Sort(Collections.singletonList(new Order(column, Direction.ASC)));
     }
 
-    /** Descending sort by {@code column}. */
+    /** 按 {@code column} 降序排序。 */
     @API(status = API.Status.STABLE)
     public static Sort desc(String column) {
         return new Sort(Collections.singletonList(new Order(column, Direction.DESC)));
     }
 
-    /** Append a second clause to this sort. */
+    /** 为此排序追加第二个子句。 */
     @API(status = API.Status.STABLE)
     public Sort andAsc(String column) {
         return and(new Order(column, Direction.ASC));
@@ -60,7 +60,7 @@ public final class Sort {
         return orders;
     }
 
-    /** Optimised to fit chainable {@code orderBy("name DESC, age ASC")}. */
+    /** 为适配可链式调用的 {@code orderBy("name DESC, age ASC")} 而优化。 */
     @API(status = API.Status.INTERNAL)
     public String toSql() {
         if (orders.isEmpty()) return "";

@@ -1,6 +1,6 @@
 version: 2
 updates:
-  # Keep the core `jorm-core` module's Maven dependencies fresh.
+  # 保持 jorm-core 核心模块的 Maven 依赖为最新版本。
   - package-ecosystem: "maven"
     directory: "/jorm-core"
     schedule:
@@ -21,8 +21,8 @@ updates:
           - "org.slf4j:*"
           - "ch.qos.logback:*"
     ignore:
-      # Spring Boot 2.7.x is the supported baseline; do not auto-bump
-      # to 3.x without explicit migration work.
+      # Spring Boot 2.7.x 是受支持的基线版本;未经显式的迁移工作
+      # 不要自动升级到 3.x。
       - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.springframework:spring-core"
@@ -34,7 +34,7 @@ updates:
       - "dependencies"
       - "core"
 
-  # Keep the starter module's Maven dependencies fresh.
+  # 保持 starter 模块的 Maven 依赖为最新版本。
   - package-ecosystem: "maven"
     directory: "/jorm-spring-boot-starter"
     schedule:
@@ -59,8 +59,8 @@ updates:
       - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
         update-types: ["version-update:semver-major"]
       - dependency-name: "io.github.jadendu:jorm"
-        # Don't let dependabot bump the internal core dep on our own
-        # snapshot — we promote it manually when a core release ships.
+        # 不要让 dependabot 升级我们对内部 core 快照的依赖 —
+        # core 发布时会手动提升该版本。
         update-types: ["version-update:semver-major"]
     commit-message:
       prefix: "deps(starter)"
@@ -69,7 +69,7 @@ updates:
       - "dependencies"
       - "starter"
 
-  # GitHub Actions themselves.
+  # GitHub Actions 本身。
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

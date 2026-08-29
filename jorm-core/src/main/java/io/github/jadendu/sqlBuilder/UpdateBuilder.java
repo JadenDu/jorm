@@ -12,12 +12,13 @@ import io.github.jadendu.entity.EntityModel;
 import io.github.jadendu.entity.EntityModelRegistry;
 import io.github.jadendu.exception.ErrorCode;
 import io.github.jadendu.exception.JormException;
+import io.github.jadendu.util.SqlBuilderHelper;
 import io.github.jadendu.util.SqlValidator;
 
 /**
- * Static UPDATE builder. SET and WHERE column names are both validated against the entity's
- * whitelist exactly as {@link FindBuilder} validates WHERE columns — so injecting raw SQL via a
- * {@code Set()} column name is impossible.
+ * 静态 UPDATE 构建器。SET 与 WHERE 的列名都会像 {@link FindBuilder} 校验 WHERE 列那样
+ * 针对实体白名单进行校验——因此无法通过
+ * {@code Set()} 列名注入原始 SQL。
  *
  * @author JadenDu
  */
@@ -32,13 +33,13 @@ public final class UpdateBuilder {
         EntityModel model = EntityModelRegistry.get(cls);
         String table = model.tableName();
 
-        // --- SET column whitelist ---
+        // --- SET 列白名单 ---
         for (String col : updates.keySet()) {
             if (!model.isValidColumn(col)) {
                 throw new JormException(ErrorCode.INVALID_COLUMN, "unknown SET column: " + col);
             }
         }
-        // --- WHERE conditions still get their column + operator validated ---
+        // --- WHERE 条件仍会对列与操作符进行校验 ---
         SqlValidator.validateConditions(model, conditions, ErrorCode.INVALID_COLUMN);
 
         String setClause =
@@ -47,7 +48,7 @@ public final class UpdateBuilder {
                         .collect(Collectors.joining(", "));
         String whereClause =
                 conditions.stream()
-                        .map(cond -> cond.getColumn() + " " + cond.getOperator() + " ?")
+                        .map(SqlBuilderHelper::renderCondition)
                         .collect(Collectors.joining(" AND "));
         return String.format("UPDATE %s SET %s WHERE %s", table, setClause, whereClause);
     }

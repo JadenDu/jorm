@@ -6,14 +6,13 @@ import org.apiguardian.api.API;
 import io.github.jadendu.cache.impl.NoOpSecondLevelCache;
 
 /**
- * Process-global singleton controller for the second-level cache. Coordinates consistently across
- * standalone use, Spring, and tests.
+ * 二级缓存的进程级全局单例控制器,在独立使用、Spring 和测试场景间保持一致协调。
  *
- * <p>The actual cache SPI can be a {@link io.github.jadendu.cache.impl.NoOpSecondLevelCache NoOp}
- * (default — disabled), the Spring {@link io.github.jadendu.cache.redis.RedisSecondLevelCache
- * Redis} implementation from the starter, or a user-supplied implementation. Setting a non-trivial
- * cache installs the instrumentation wrapper so hits/misses are tracked in {@link
- * io.github.jadendu.metrics.StatisticsRegistry}.
+ * <p>实际的缓存 SPI 可以是 {@link io.github.jadendu.cache.impl.NoOpSecondLevelCache NoOp}
+ * (默认 —— 禁用)、starter 提供的 Spring {@link io.github.jadendu.cache.redis.RedisSecondLevelCache
+ * Redis} 实现,或由用户提供的实现。设置非平凡(非 NoOp)的缓存时,
+ * 会安装埋点包装器,以便在 {@link
+ * io.github.jadendu.metrics.StatisticsRegistry} 中记录命中/未命中。
  *
  * @author JadenDu
  */
@@ -25,7 +24,7 @@ public final class CacheManager {
 
     private CacheManager() {}
 
-    /** Install a {@link SecondLevelCache}; transparently wrapped with metrics instrumentation. */
+    /** 安装一个 {@link SecondLevelCache};会被透明地包裹上指标埋点。 */
     @API(status = API.Status.STABLE)
     public static void setSecondLevelCache(SecondLevelCache cache) {
         if (cache == null || cache instanceof NoOpSecondLevelCache) {
@@ -51,7 +50,7 @@ public final class CacheManager {
         return cacheEnabled && secondLevelCache != null;
     }
 
-    /** Disable caching; the cache instance is replaced with {@code NoOp}. */
+    /** 禁用缓存;缓存实例将被替换为 {@code NoOp}。 */
     @API(status = API.Status.STABLE)
     public static void setCacheEnabled(boolean enabled) {
         cacheEnabled = enabled;

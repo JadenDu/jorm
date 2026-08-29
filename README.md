@@ -208,6 +208,9 @@ try (SaveSession s = new SaveSession()) {
 }
 
 // (2) 手动低级：用于核心模块。
+//     注意：TransactionManager 维护自己的 ThreadLocal，不会发布到
+//     CurrentTransactionConnection。因此必须把 conn 显式传入会话构造器，
+//     否则裸 new SaveSession() 会拿到另一条自动提交的连接，无法加入事务。
 Connection conn = TransactionManager.begin();
 try (JormSession s = new JormSession(conn)) {
     s.saveSession().save(user1);

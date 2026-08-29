@@ -20,23 +20,22 @@ import io.github.jadendu.transaction.AfterCommitHooks;
 import io.github.jadendu.transaction.CurrentTransactionConnection;
 
 /**
- * Common base for every {@code io.github.jadendu} {@code Session}.
+ * 所有 {@code io.github.jadendu} {@code Session} 的公共基类。
  *
- * <p>Encapsulates:
+ * <p>封装了:
  *
  * <ul>
- *   <li>{@link Connection} ownership — managed (auto-close on session close) vs. caller-supplied
- *       (left intact on close).
- *   <li>Auto-commit defaults — switched on for non-transactional sessions, left untouched when a
- *       JORM-managed or Spring-managed transaction is active.
- *   <li>Nested savepoints with hierarchical rollback semantics.
- *   <li>A guarded-once {@code close()} that never throws on double-close.
+ *   <li>{@link Connection} 的所有权——框架托管(会话关闭时自动关闭)与调用方提供
+ *       (关闭时保持不变)。
+ *   <li>自动提交默认值——对非事务会话开启;当 JORM 管理或 Spring 管理的事务
+ *       处于激活状态时保持不变。
+ *   <li>带层级回滚语义的嵌套保存点。
+ *   <li>只允许执行一次的 {@code close()},重复关闭不会抛出异常。
  * </ul>
  *
- * <p><b>Removed since 2.0:</b> the legacy "first-level cache" (per-session per-id map) was dead
- * weight — never fed by any query path. The L2 cache ({@link io.github.jadendu.cache.CacheManager})
- * serves the caching narrative; an opt-in persistence-context API may return through a separate SPI
- * in 3.x.
+ * <p><b>自 2.0 起移除:</b> 遗留的"一级缓存"(按会话按 id 的映射)纯属多余——从未
+ * 被任何查询路径使用。二级缓存({@link io.github.jadendu.cache.CacheManager})
+ * 承担了缓存职责;可选的持久化上下文 API 可能会在 3.x 中通过独立的 SPI 回归。
  *
  * @author JadenDu
  */
@@ -45,8 +44,8 @@ public abstract class BaseSession<T extends BaseSession<T>> implements AutoClose
 
     private static final Logger log = LoggerFactory.getLogger(BaseSession.class);
 
-    // Visible to subclasses; mutability: outer-managed sessions keep
-    // their connection supplied, while managed sessions close it.
+    // 对子类可见;可变性:外部管理的会话保持调用方提供的连接,
+    // 而框架托管的会话则会关闭它。
     protected Connection connection;
     protected boolean isManagedConnection;
 
@@ -56,15 +55,15 @@ public abstract class BaseSession<T extends BaseSession<T>> implements AutoClose
     private Integer queryTimeoutSeconds;
     private Integer fetchSize;
 
-    /** Caller-supplied connection (manual transaction / explicit pool). */
+    /** 调用方提供的连接(手动事务 / 显式连接池)。 */
     protected BaseSession(Connection connection) {
         this.connection = connection;
         this.isManagedConnection = false;
     }
 
     /**
-     * Auto-managed connection from {@link Jorm#getConnection()} with auto-commit default on (no
-     * tx).
+     * 来自 {@link Jorm#getConnection()} 的自动托管连接,自动提交默认开启(无
+     * 事务)。
      */
     protected BaseSession() {
         this(Jorm.getConnection());
@@ -83,13 +82,13 @@ public abstract class BaseSession<T extends BaseSession<T>> implements AutoClose
         }
     }
 
-    /** Subclasses return {@code this} cast to themselves to support chainable fluent calls. */
+    /** 子类将 {@code this} 强转为自身类型返回,以支持可链式调用的流式方法。 */
     protected abstract T self();
 
     /**
-     * Optional SQL execution options applied to the next statement this session issues. Reset to
-     * defaults after each {@code Find}/{@code Update}/... execution; to persist options across
-     * calls, re-apply them per call.
+     * 可选的 SQL 执行选项,应用于本会话发出的下一条语句。每次 {@code Find}/{@code Update}/...
+     * 执行后会重置为默认值;若要在多次调用之间保持选项,
+     * 请每次调用时重新设置。
      */
     @API(status = API.Status.STABLE)
     public T queryTimeout(int seconds) {
@@ -97,7 +96,7 @@ public abstract class BaseSession<T extends BaseSession<T>> implements AutoClose
         return self();
     }
 
-    /** Override the JDBC fetch-size for the next prepared statement. */
+    /** 为下一条预编译语句覆盖 JDBC 抓取大小(fetch-size)。 */
     @API(status = API.Status.STABLE)
     public T fetchSize(int size) {
         this.fetchSize = size;
@@ -119,8 +118,8 @@ public abstract class BaseSession<T extends BaseSession<T>> implements AutoClose
     }
 
     /**
-     * Apply {@link #queryTimeoutSeconds()} / {@link #fetchSize()} to a fresh {@link
-     * java.sql.PreparedStatement}.
+     * 将 {@link #queryTimeoutSeconds()} / {@link #fetchSize()} 应用于新的 {@link
+     * java.sql.PreparedStatement}。
      */
     protected void applyQueryOptions(java.sql.PreparedStatement stmt) throws SQLException {
         if (queryTimeoutSeconds != null) {
@@ -131,7 +130,7 @@ public abstract class BaseSession<T extends BaseSession<T>> implements AutoClose
         }
     }
 
-    /** Reset transient query options after each execution. */
+    /** 每次执行后重置临时查询选项。 */
     protected void resetQueryOptions() {
         this.queryTimeoutSeconds = null;
         this.fetchSize = null;
@@ -139,7 +138,7 @@ public abstract class BaseSession<T extends BaseSession<T>> implements AutoClose
 
     @Override
     public void close() {
-        // Active transaction: keep the connection alive; we joined it.
+        // 事务激活中:保持连接存活;本会话已加入该事务。
         if (CurrentTransactionConnection.hasTransaction()
                 && CurrentTransactionConnection.get() == this.connection) {
             log.debug("Skipping connection close: session joined a JORM transaction");
@@ -157,8 +156,8 @@ public abstract class BaseSession<T extends BaseSession<T>> implements AutoClose
             return;
         }
         try {
-            // Spring owns commit/rollback for the tx-bound connection; rolling back here would
-            // abort the surrounding @Transactional block mid-flight.
+            // 事务绑定连接的提交/回滚由 Spring 负责;在此处回滚会
+            // 中途终止外围的 @Transactional 代码块。
             if (!AfterCommitHooks.isSpringTransactionActive()
                     && !connection.isClosed()
                     && !connection.getAutoCommit()) {
@@ -177,8 +176,8 @@ public abstract class BaseSession<T extends BaseSession<T>> implements AutoClose
     }
 
     /**
-     * Issue a savepoint under the current connection. Saving the same name twice throws a {@link
-     * JormException}.
+     * 在当前连接下创建保存点。重复保存相同名称会抛出 {@link
+     * JormException}。
      */
     @API(status = API.Status.STABLE)
     public void createSavepoint(String name) {
@@ -193,7 +192,7 @@ public abstract class BaseSession<T extends BaseSession<T>> implements AutoClose
         }
     }
 
-    /** Roll back to the named savepoint and discard later savepoints. */
+    /** 回滚到指定名称的保存点,并丢弃其后创建的保存点。 */
     @API(status = API.Status.STABLE)
     public void rollbackToSavepoint(String name) {
         checkIfClosed();
@@ -203,7 +202,7 @@ public abstract class BaseSession<T extends BaseSession<T>> implements AutoClose
         }
         try {
             connection.rollback(sp);
-            // Drop savepoints created after the rolled-back one.
+            // 丢弃在回滚目标之后创建的保存点。
             List<String> toRemove = new java.util.ArrayList<>();
             boolean found = false;
             for (String key : savepoints.keySet()) {
@@ -220,7 +219,7 @@ public abstract class BaseSession<T extends BaseSession<T>> implements AutoClose
         }
     }
 
-    /** Expose the underlying JDBC connection for advanced callers. */
+    /** 向高级调用方暴露底层 JDBC 连接。 */
     @API(status = API.Status.STABLE)
     public Connection getNativeConnection() {
         return connection;

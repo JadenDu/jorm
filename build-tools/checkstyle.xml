@@ -4,43 +4,38 @@
     "https://checkstyle.org/dtds/configuration_1_3.dtd">
 
 <!--
-  Shared Checkstyle configuration for the JORM project.
-  Based on Google Java Style with pragmatic relaxations:
-    * PascalCase chainable method names are allowed during the 2.x
-      deprecation window (see MethodName below).
-    * Method-line lengths up to 140 chars are allowed for readability
-      of builder-style tests.
-  Relaxed rules can be tightened in 3.0.
+  JORM 项目共享的 Checkstyle 配置。
+  基于 Google Java Style,并做了一些务实的放宽:
+    * 2.x 弃用期内允许 PascalCase 的可链式方法名(见下方 MethodName)。
+    * 为便于阅读 builder 风格的测试,方法行长度放宽到 140 字符。
+  放宽的规则可在 3.0 中收紧。
 -->
 <module name="Checker">
   <property name="charset" value="UTF-8"/>
   <property name="severity" value="warning"/>
   <property name="fileExtensions" value="java, xml, properties"/>
 
-  <!-- Files must end with a newline. -->
+  <!-- 文件必须以换行符结尾。 -->
   <module name="NewlineAtEndOfFile">
     <property name="lineSeparator" value="lf"/>
   </module>
 
-  <!-- No tab characters anywhere. -->
+  <!-- 任何位置都不允许出现制表符。 -->
   <module name="FileTabCharacter">
     <property name="eachLine" value="true"/>
   </module>
 
-  <!-- Trim trailing whitespace. -->
+  <!-- 去除行尾空白。 -->
   <module name="RegexpSingleline">
     <property name="format" value="\s+$"/>
     <property name="message" value="Line has trailing whitespace."/>
   </module>
 
-  <!-- License header enforcement is delegated to Spotless'
-       <licenseHeader>...</licenseHeader> rule in pom.xml (the rule
-       is more visible to contributors there, and avoids a brittle
-       checkstyle relative-path dependency).
+  <!-- 许可证头检查委托给 pom.xml 中 Spotless 的 <licenseHeader>...</licenseHeader>
+       规则(对贡献者更显眼,也避免了 checkstyle 对相对路径的脆弱依赖)。
 
-       If you want Checkstyle to enforce the header too, use the
-       RegexpHeader module and pass checkstyle.header.file via
-       propertyExpansion.
+       如果也希望 Checkstyle 强制检查许可证头,可使用 RegexpHeader
+       模块,并通过 propertyExpansion 传入 checkstyle.header.file。
   -->
 
   <module name="LineLength">
@@ -50,7 +45,7 @@
 
   <module name="TreeWalker">
 
-    <!-- ===== Imports ===== -->
+    <!-- ===== 导入 ===== -->
     <module name="AvoidStarImport"/>
     <module name="RedundantImport"/>
     <module name="UnusedImports">
@@ -63,7 +58,7 @@
       <property name="option" value="top"/>
     </module>
 
-    <!-- ===== Naming ===== -->
+    <!-- ===== 命名 ===== -->
     <module name="PackageName">
       <property name="format" value="^[a-z]+(\.[a-z][a-zA-Z0-9_]*)*$"/>
     </module>
@@ -79,11 +74,11 @@
     <module name="LocalVariableName"/>
     <module name="ParameterName"/>
     <module name="MethodName">
-      <!-- Allow PascalCase chainable methods during deprecation window. -->
+      <!-- 弃用期内允许 PascalCase 可链式方法。 -->
       <property name="format" value="^[a-z][a-zA-Z0-9]*$|^[A-Z][a-zA-Z0-9]*$"/>
     </module>
 
-    <!-- ===== Whitespace / formatting ===== -->
+    <!-- ===== 空白 / 格式 ===== -->
     <module name="WhitespaceAround">
       <property name="allowEmptyConstructors" value="true"/>
       <property name="allowEmptyMethods" value="true"/>
@@ -98,7 +93,7 @@
       <property name="allowMultipleEmptyLines" value="false"/>
     </module>
 
-    <!-- ===== Coding ===== -->
+    <!-- ===== 编码规范 ===== -->
     <module name="EmptyStatement"/>
     <module name="EqualsHashCode"/>
     <module name="SimplifyBooleanExpression"/>
@@ -107,7 +102,7 @@
     <module name="MultipleVariableDeclarations"/>
     <module name="HideUtilityClassConstructor"/>
 
-    <!-- ===== Javadoc ===== -->
+    <!-- ===== Javadoc 文档 ===== -->
     <module name="MissingJavadocType">
       <property name="scope" value="public"/>
     </module>

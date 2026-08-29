@@ -27,15 +27,14 @@ import io.github.jadendu.exception.ErrorCode;
 import io.github.jadendu.exception.JormException;
 
 /**
- * Cache interface for {@link EntityModel}s, keyed by entity class.
+ * {@link EntityModel} 的缓存接口,以实体类为键。
  *
- * <p>Reflection over entity types is amortised: each unique class pays the cost once (at first
- * lookup), subsequent lookups go through a {@link ConcurrentHashMap} that is read-hot in practice.
+ * <p>实体类型的反射成本被摊薄:每个唯一的类只承担一次开销(首次查找时),之后的查找
+ * 通过 {@link ConcurrentHashMap} 完成,实际运行时为读密集。
  *
- * <p>The active {@link NamingStrategy} is held statically and is consulted at model-build time.
- * Changing the strategy {@linkplain #setNamingStrategy(NamingStrategy) re-sets the cache}
- * automatically — but doing so after bootstrap is rare and must be coordinated by a single thread
- * or during DI/Spring Boot auto-config.
+ * <p>当前生效的 {@link NamingStrategy} 以静态方式持有,并在构建模型时被查询。更换策略
+ * 会通过 {@linkplain #setNamingStrategy(NamingStrategy) 自动重置缓存}——但启动后再更换
+ * 策略较为少见,且必须由单个线程协调,或是在 DI/Spring Boot 自动配置期间进行。
  *
  * @author JadenDu
  */
@@ -51,10 +50,9 @@ public final class EntityModelRegistry {
     private EntityModelRegistry() {}
 
     /**
-     * Resolve the {@link EntityModel} for {@code cls}, building & caching on first encounter.
-     * Throws a {@link JormException} when the class is not a valid JORM entity (missing
-     * {@code @Table} is allowed — the default naming strategy synthesises a name — but a missing
-     * {@code @Id} is rejected).
+     * 解析 {@code cls} 对应的 {@link EntityModel},首次遇到时构建并缓存。
+     * 当该类不是有效的 JORM 实体时抛出 {@link JormException}(缺少 {@code @Table}
+     * 是允许的——默认命名策略会合成一个表名——但缺少 {@code @Id} 会被拒绝)。
      */
     public static EntityModel get(Class<?> cls) {
         if (cls == null) {
@@ -63,14 +61,14 @@ public final class EntityModelRegistry {
         return CACHE.computeIfAbsent(cls, EntityModelRegistry::build);
     }
 
-    /** Current strategy; never null. */
+    /** 当前策略;永不为 null。 */
     public static NamingStrategy namingStrategy() {
         return namingStrategy;
     }
 
     /**
-     * Replace the strategy and invalidate the model cache. Call only during bootstrap; mutating in
-     * flight may already-built models keep the previous physical naming.
+     * 替换策略并使模型缓存失效。仅应在启动阶段调用;若在运行中变更,
+     * 已构建的模型仍会保留之前的物理命名。
      */
     public static void setNamingStrategy(NamingStrategy strategy) {
         if (strategy == null) {
@@ -83,7 +81,7 @@ public final class EntityModelRegistry {
                 strategy.getClass().getSimpleName());
     }
 
-    /** Look up a column mapping by Java property name or physical column name. */
+    /** 按 Java 属性名或物理列名查找列映射。 */
     public static ColumnMapping columnOf(Class<?> cls, String name) {
         return get(cls).findByName(name);
     }
@@ -99,9 +97,8 @@ public final class EntityModelRegistry {
         ColumnMapping idMapping = null;
         GenerationType idGenerationType = null;
 
-        // Walk from the entity subclass up to (but excluding)
-        // java.lang.Object. Insertable / updatable / whitelist semantics
-        // are computed inside the loop to keep this method linear.
+        // 从实体子类向上遍历到(但不包括)java.lang.Object。
+        // 可插入 / 可更新 / 白名单的语义都在循环内计算,以保持本方法为线性复杂度。
         List<ColumnMapping> insertable = new ArrayList<>();
         List<ColumnMapping> updatable = new ArrayList<>();
 
@@ -123,7 +120,7 @@ public final class EntityModelRegistry {
                 boolean nullable = column == null || column.nullable();
                 ColumnMapping mapping = new ColumnMapping(field, propName, columnName, nullable);
 
-                // By-name lookup keyed on both Java & SQL identifier.
+                // 同时以 Java 标识符和 SQL 标识符为键,支持按名查找。
                 byProp.put(propName, mapping);
                 byColumn.put(columnName, mapping);
                 validColumns.add(columnName);
@@ -167,7 +164,7 @@ public final class EntityModelRegistry {
                 validColumns);
     }
 
-    /** User-supplied PK → include; {@code AUTO/IDENTITY/SEQUENCE/TABLE} → exclude (DB-side). */
+    /** 用户提供的 PK → 包含;{@code AUTO/IDENTITY/SEQUENCE/TABLE} → 排除(由数据库侧生成)。 */
     private static boolean idGenerationExcludedFromInsert(GenerationType t) {
         if (t == null) return false;
         switch (t) {
@@ -188,7 +185,7 @@ public final class EntityModelRegistry {
         return namingStrategy().toTableName(cls.getSimpleName());
     }
 
-    /** Test-only hook: invalidate the cache without touching the strategy. */
+    /** 仅供测试的钩子:使缓存失效而不改动策略。 */
     static void clear() {
         CACHE.clear();
     }

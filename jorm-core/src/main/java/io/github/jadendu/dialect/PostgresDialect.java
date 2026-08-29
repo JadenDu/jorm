@@ -6,8 +6,8 @@ import java.sql.SQLException;
 import org.apiguardian.api.API;
 
 /**
- * Dialect for PostgreSQL 10+. Defaults to SQL-state based duplicate-key detection ({@code 23505});
- * LIMIT/OFFSET are both supported.
+ * PostgreSQL 10+ 的方言。默认采用基于 SQL 状态的重复键检测({@code 23505});
+ * LIMIT/OFFSET 均受支持。
  *
  * @author JadenDu
  */
@@ -16,7 +16,7 @@ public class PostgresDialect implements Dialect {
 
     private static final long serialVersionUID = 1L;
 
-    /** Singleton instance. */
+    /** 单例实例。 */
     public static final PostgresDialect INSTANCE = new PostgresDialect();
 
     @Override
@@ -36,7 +36,7 @@ public class PostgresDialect implements Dialect {
 
     @Override
     public boolean supportsIdentity() {
-        // SERIAL/IDENTITY columns exist; IDENTITY since PG10.
+        // SERIAL/IDENTITY 列均可用;IDENTITY 自 PG10 起可用。
         return true;
     }
 

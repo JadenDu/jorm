@@ -16,16 +16,16 @@ import io.github.jadendu.exception.JormException;
 import io.github.jadendu.session.factory.Jorm;
 
 /**
- * Programmatic transaction template that takes care of connection acquisition, {@code
- * setAutoCommit}, {@code commit}, {@code rollback}, and resource cleanup for a code block.
+ * 编程式事务模板，负责代码块中连接的获取、{@code
+ * setAutoCommit}、{@code commit}、{@code rollback} 以及资源清理。
  *
- * <p>Nested invocations reuse the outer transaction (propagation {@code REQUIRED}) automatically
- * when possible — see {@link CurrentTransactionConnection}. Post-commit cache-eviction callbacks
- * are dispatched via {@link AfterCommitHooks}, which in turn routes them to Spring's {@code
- * TransactionSynchronizationManager} when active, eliminating the 1.x race where cache regions were
- * cleared before commit under {@code @Transactional}.
+ * <p>嵌套调用在可能时自动复用外层事务（传播级别 {@code REQUIRED}）——
+ * 参见 {@link CurrentTransactionConnection}。提交后的缓存驱逐回调
+ * 通过 {@link AfterCommitHooks} 分发，后者在激活时会将它们路由到 Spring 的 {@code
+ * TransactionSynchronizationManager}，消除了 1.x 版本中的竞态问题：
+ * 在 {@code @Transactional} 下缓存区域于提交前被清空。
  *
- * <p>Example:
+ * <p>示例：
  *
  * <pre>{@code
  * new TransactionTemplate().execute(() -> {
@@ -44,7 +44,7 @@ public class TransactionTemplate {
 
     private static final Logger log = LoggerFactory.getLogger(TransactionTemplate.class);
 
-    /** Convenience overload with a {@link Consumer} that ignores the connection. */
+    /** 便捷重载，使用忽略连接的 {@link Consumer}。 */
     @API(status = API.Status.STABLE)
     public void execute(Consumer<Connection> action) {
         execute(
@@ -55,9 +55,9 @@ public class TransactionTemplate {
     }
 
     /**
-     * Run {@code action} inside a transaction; commit on success, rollback on checked/unchecked
-     * exception. When a JORM-managed transaction is already active on the current thread, the
-     * callback joins it and no commit/rollback is attempted here.
+     * 在事务内执行 {@code action}；成功则提交，遇到受检/非受检异常则回滚。
+     * 当当前线程已存在 JORM 管理的事务时，回调会加入该事务，
+     * 此处不会尝试提交或回滚。
      */
     @API(status = API.Status.STABLE)
     public <T> T execute(Callable<T> action) {
@@ -93,8 +93,8 @@ public class TransactionTemplate {
             return result;
         } catch (Exception e) {
             if (!existing) {
-                // Pending callbacks are void: the transaction is rolling
-                // back, so firing would have been incorrect anyway.
+                // 挂起的回调作废：事务正在回滚，
+                // 此时触发它们本身就不正确。
                 AfterCommitHooks.drain();
                 if (conn != null) {
                     try {
@@ -126,9 +126,9 @@ public class TransactionTemplate {
     }
 
     /**
-     * Register {@code callback} to fire only after the active transaction commits. Behaves like the
-     * legacy method of the same name; the redirection lets both Spring and Jorm-managed flows share
-     * one registration point.
+     * 注册 {@code callback}，使其仅在活动事务提交后触发。行为与旧版同名方法一致；
+     * 这种重定向让 Spring 与 JORM 管理的流程共享
+     * 同一个注册入口。
      */
     @API(status = API.Status.STABLE)
     public static void doAfterCommit(Runnable callback) {

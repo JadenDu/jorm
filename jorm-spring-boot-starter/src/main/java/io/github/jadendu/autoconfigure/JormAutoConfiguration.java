@@ -37,23 +37,23 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 /**
- * Spring Boot auto-configuration for JORM.
+ * JORM 的 Spring Boot 自动配置。
  *
- * <p>Installs:
+ * <p>安装以下组件:
  *
  * <ul>
- *   <li>HikariCP {@link DataSource} with the values from {@link JormProperties}.
- *   <li>{@link TransactionAwareDataSourceProxy} wrapping that datasource so any inner {@code new
- *       SaveSession()} picks up the Spring-managed connection. This is what lets
- *       {@code @Transactional} work with bare Session constructors.
- *   <li>{@link PlatformTransactionManager} mirroring the standard Spring Data {@code
- *       DataSourceTransactionManager}.
- *   <li>Auto-detection of the active {@link io.github.jadendu.dialect.Dialect} from the JDBC URL
- *       (override via {@code jorm.dialect}).
- *   <li>An optional {@link RedisSecondLevelCache} bean when Redis is on the classpath and {@code
- *       jorm.cache.redis.enabled=true}.
- *   <li>A Spring Boot Actuator {@link JormHealthIndicator} (if the actuator is on the classpath)
- *       that exposes query and cache statistics.
+ *   <li>基于 {@link JormProperties} 配置值的 HikariCP {@link DataSource}。
+ *   <li>{@link TransactionAwareDataSourceProxy} 包装该数据源,使内部任意 {@code new
+ *       SaveSession()} 都能获取 Spring 管理的连接,从而让裸 Session 构造器也能配合
+ *       {@code @Transactional} 正常工作。
+ *   <li>与标准 Spring Data {@code DataSourceTransactionManager} 对齐的 {@link
+ *       PlatformTransactionManager}。
+ *   <li>根据 JDBC URL 自动探测生效的 {@link io.github.jadendu.dialect.Dialect}(可通过
+ *       {@code jorm.dialect} 覆盖)。
+ *   <li>当 Redis 位于 classpath 且 {@code jorm.cache.redis.enabled=true} 时,提供可选的
+ *       {@link RedisSecondLevelCache} Bean。
+ *   <li>Spring Boot Actuator 的 {@link JormHealthIndicator}(当 actuator 位于 classpath 时),
+ *       用于暴露查询与缓存统计信息。
  * </ul>
  *
  * @author JadenDu
@@ -125,8 +125,8 @@ public class JormAutoConfiguration implements SmartInitializingSingleton {
     }
 
     /**
-     * Spring Boot Actuator health indicator. Activated automatically when {@code
-     * spring-boot-starter-actuator} is on the classpath.
+     * Spring Boot Actuator 健康指示器。当 {@code spring-boot-starter-actuator} 位于 classpath
+     * 上时自动激活。
      */
     @Bean
     @ConditionalOnClass(name = "org.springframework.boot.actuate.health.HealthIndicator")
@@ -141,7 +141,7 @@ public class JormAutoConfiguration implements SmartInitializingSingleton {
         DataSource ds = applicationContext.getBean("jormDataSource", DataSource.class);
         Jorm.setDataSource(ds);
 
-        // Configure the framework-wide batch size and dialect based on properties.
+        // 根据配置属性设置框架级的批量大小与方言。
         Jorm.setBatchSize(properties.getBatchSize());
         Jorm.setDialect(properties.resolveDialect());
 
@@ -163,8 +163,8 @@ public class JormAutoConfiguration implements SmartInitializingSingleton {
                 "JORM L2 cache status: {}",
                 enabled ? "enabled (" + cache.getClass().getSimpleName() + ")" : "disabled");
 
-        // Register the JORM statistics with the Spring context so users
-        // can expose them via Micrometer using a simple MeterBinder.
+        // 将 JORM 统计信息注册到 Spring 上下文,使用户可以通过一个简单的
+        // MeterBinder 借助 Micrometer 暴露这些指标。
         logger.info(
                 "JORM statistics available: query={}, cache={}",
                 StatisticsRegistry.query(),

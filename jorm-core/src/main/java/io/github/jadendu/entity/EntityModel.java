@@ -15,15 +15,15 @@ import io.github.jadendu.exception.ErrorCode;
 import io.github.jadendu.exception.JormException;
 
 /**
- * Cached metadata for a JORM-mapped entity class.
+ * JORM 映射实体类的已缓存元数据。
  *
- * <p>A single instance is built per class by {@link EntityModelRegistry} and reused by every {@code
- * Session} / {@code Builder} thereafter, so reflection happens at most once per class loader. The
- * model resolves {@link io.github.jadendu.entity.naming.NamingStrategy}-driven physical column and
- * table names once and stores the result.
+ * <p>每个类由 {@link EntityModelRegistry} 构建一个实例,并被其后的每个 {@code
+ * Session} / {@code Builder} 复用,因此每个类加载器最多只做一次反射。该模型
+ * 一次性解析由 {@link io.github.jadendu.entity.naming.NamingStrategy} 驱动的物理列名与
+ * 表名,并保存解析结果。
  *
- * <p>Fields declared on superclasses are included. Synthetic fields (compiler-generated bridge
- * fields, J Lambdas...) are skipped.
+ * <p>超类上声明的字段也会被纳入。合成字段(编译器生成的桥接字段、Lambda
+ * 表达式...)会被跳过。
  *
  * @author JadenDu
  */
@@ -40,7 +40,7 @@ public final class EntityModel {
     private final List<ColumnMapping> updatableColumns;
     private final Map<String, ColumnMapping> columnsByPropertyName;
     private final Map<String, ColumnMapping> columnsByColumnName;
-    private final List<String> validColumnNames; // for SQL-injection whitelist
+    private final List<String> validColumnNames; // 用于 SQL 注入白名单
 
     EntityModel(
             Class<?> entityClass,
@@ -98,12 +98,12 @@ public final class EntityModel {
         return idGenerationType == null ? GenerationType.AUTO : idGenerationType;
     }
 
-    /** Columns to insert — excludes primary-key auto-strategy fields and transients. */
+    /** 要插入的列——排除主键自动生成策略字段和瞬态字段。 */
     public List<ColumnMapping> insertableColumns() {
         return insertableColumns;
     }
 
-    /** Columns considered for update — excludes primary key and transients. */
+    /** 参与更新的列——排除主键和瞬态字段。 */
     public List<ColumnMapping> updatableColumns() {
         return updatableColumns;
     }
@@ -114,9 +114,8 @@ public final class EntityModel {
     }
 
     /**
-     * Whitelist of physical column names used by the SQL builders to forbid SQL injection through
-     * {@code Where("1=1 OR ...")} style inputs. Sorted by physical name (alphabetical order is not
-     * a contract — only the elements matter).
+     * 物理列名白名单,SQL 构建器用它阻止通过 {@code Where("1=1 OR ...")}
+     * 形式的输入进行 SQL 注入。按物理列名排序(字母顺序并非约定——只有元素本身有意义)。
      */
     public List<String> validColumnNames() {
         return validColumnNames;

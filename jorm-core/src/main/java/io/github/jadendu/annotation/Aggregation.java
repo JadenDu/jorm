@@ -9,11 +9,11 @@ import java.lang.annotation.Target;
 import org.apiguardian.api.API;
 
 /**
- * Marks an entity property as non-persistent. Prefer the renamed {@link Transient} annotation —
- * this class is retained only for source compatibility and is scheduled for removal in 3.0.
+ * 将实体属性标记为非持久化。建议使用更名后的 {@link Transient} 注解——
+ * 本类仅为保持源码兼容性而保留,计划在 3.0 中移除。
  *
  * @author JadenDu
- * @deprecated since 2.0, use {@link Transient} instead.
+ * @deprecated 自 2.0 起弃用,请改用 {@link Transient}。
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

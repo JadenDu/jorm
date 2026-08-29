@@ -4,11 +4,11 @@ package io.github.jadendu.metrics;
 import org.apiguardian.api.API;
 
 /**
- * Global holder for framework statistics. The singletons are intended to be read by monitoring
- * tools (Spring Boot {@code HealthIndicator}, Micrometer adapter) — never written by user code.
+ * 框架统计信息的全局持有者。这些单例供监控工具
+ * (Spring Boot {@code HealthIndicator}、Micrometer 适配器)读取 —— 禁止用户代码写入。
  *
- * <p>Stats values are snapshots at read time and may shift between two reads; treat as best-effort
- * app-level metrics, not transactional data.
+ * <p>统计值只是读取时刻的快照,两次读取之间可能发生变化;请将其视为尽力而为的
+ * 应用级指标,而非事务性数据。
  *
  * @author JadenDu
  */
@@ -30,7 +30,7 @@ public final class StatisticsRegistry {
         return CACHE;
     }
 
-    /** Reset both registries — usually only called in tests. */
+    /** 重置两个注册表 —— 通常仅在测试中调用。 */
     @API(status = API.Status.EXPERIMENTAL)
     public static void reset() {
         QUERY.reset();

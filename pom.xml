@@ -9,7 +9,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.7.6</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/> <!-- 从仓库查找父 POM -->
     </parent>
 
     <!-- 聚合器坐标: 子模块继承 groupId / version -->
@@ -55,7 +55,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <!-- Build-tools versions (kept here so dependabot PRs human-readable) -->
+        <!-- Build-tools 版本 (集中在此,便于 dependabot PR 阅读) -->
         <spotless.version>2.43.0</spotless.version>
         <google-java-format.version>1.17.0</google-java-format.version>
         <checkstyle.plugin.version>3.3.1</checkstyle.plugin.version>

@@ -4,8 +4,8 @@ package io.github.jadendu.exception;
 import org.apiguardian.api.API;
 
 /**
- * Thrown when a {@code findOne} / {@code findSingle} query returned two or more rows where exactly
- * one row was expected.
+ * 当 {@code findOne} / {@code findSingle} 查询本应返回恰好一行,
+ * 却返回了两行或多行时抛出。
  *
  * @author JadenDu
  */

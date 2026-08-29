@@ -26,6 +26,7 @@ import io.github.jadendu.entity.EntityModelRegistry;
 import io.github.jadendu.exception.DuplicateKeyException;
 import io.github.jadendu.exception.ErrorCode;
 import io.github.jadendu.exception.JormException;
+import io.github.jadendu.metrics.StatisticsRegistry;
 import io.github.jadendu.session.base.BaseSession;
 import io.github.jadendu.session.factory.Jorm;
 import io.github.jadendu.sqlBuilder.SaveBuilder;
@@ -33,17 +34,17 @@ import io.github.jadendu.transaction.AfterCommitHooks;
 import io.github.jadendu.util.SessionHelper;
 
 /**
- * INSERT session. Features:
+ * INSERT 会话。特性:
  *
  * <ul>
- *   <li>Auto-fill of {@code null} {@code UUID}-strategy primary keys.
- *   <li>Validation of {@code @Column(nullable = false)} fields up-front.
- *   <li>Chunked batch insert for large lists; chunk size and the MySQL {@code max_allowed_packet}
- *       boundary are gated by {@link Jorm#batchSize()}.
- *   <li>Duplicate-key violations are surfaced as {@link DuplicateKeyException} across dialects,
- *       classified by {@link io.github.jadendu.dialect.Dialect#isDuplicateKey}.
- *   <li>All emitted events run through {@link AfterCommitHooks#register} so cache eviction waits
- *       for a real commit when Spring/JORM tx is active.
+ *   <li>自动填充为 {@code null} 的 {@code UUID} 策略主键。
+ *   <li>预先校验 {@code @Column(nullable = false)} 字段。
+ *   <li>针对大列表的分块批量插入;块大小与 MySQL {@code max_allowed_packet}
+ *       边界由 {@link Jorm#batchSize()} 控制。
+ *   <li>跨方言的主键冲突会以 {@link DuplicateKeyException} 形式暴露,
+ *       由 {@link io.github.jadendu.dialect.Dialect#isDuplicateKey} 分类判定。
+ *   <li>所有发出的事件都经过 {@link AfterCommitHooks#register} 处理,因此当 Spring/JORM 事务
+ *       激活时,缓存驱逐会等待真正的提交。
  * </ul>
  *
  * @author JadenDu
@@ -54,8 +55,8 @@ public class SaveSession extends BaseSession<SaveSession> {
     private static final Logger log = LoggerFactory.getLogger(SaveSession.class);
 
     /**
-     * Mirror of the per-class nullable-field cache kept in old `nonNullableFieldsCache`; here via
-     * reflection.
+     * 旧 `nonNullableFieldsCache` 中按类缓存非空字段列表的镜像;此处
+     * 通过反射实现。
      */
     private static final Map<Class<?>, List<Field>> NON_NULL_FIELDS_CACHE =
             new ConcurrentHashMap<>();
@@ -69,10 +70,10 @@ public class SaveSession extends BaseSession<SaveSession> {
     }
 
     // ----------------------------------------------------------------
-    //  Single-row save
+    //  单行保存
     // ----------------------------------------------------------------
 
-    /** Insert {@code entity} and write back any auto-generated primary key. */
+    /** 插入 {@code entity},并回写任何自动生成的主键。 */
     @API(status = API.Status.STABLE)
     public <T> void save(T entity) {
         checkIfClosed();
@@ -88,6 +89,7 @@ public class SaveSession extends BaseSession<SaveSession> {
             log.error("SQL generation failed for {}", entity.getClass(), e);
             throw new JormException(ErrorCode.SQL_GENERATION_FAILED, e);
         }
+        long start = System.nanoTime();
         try (PreparedStatement stmt =
                 connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             applyQueryOptions(stmt);
@@ -100,15 +102,18 @@ public class SaveSession extends BaseSession<SaveSession> {
                 }
             }
         } catch (SQLException e) {
+            StatisticsRegistry.query().recordError(elapsedMicros(start));
             throw classifiedSqlException(sql, e);
         } catch (IllegalAccessException e) {
             log.error("parameter binding failed: {}", sql, e);
+            StatisticsRegistry.query().recordError(elapsedMicros(start));
             throw new JormException(ErrorCode.PARAMETER_BINDING_FAILED, e);
         }
+        StatisticsRegistry.query().recordInsert(elapsedMicros(start));
         evictOnCommit(entity.getClass());
     }
 
-    /** Deprecated alias for {@link #save}. */
+    /** {@link #save} 的已弃用别名。 */
     @Deprecated
     @API(status = API.Status.DEPRECATED)
     public <T> void Save(T entity) {
@@ -116,16 +121,16 @@ public class SaveSession extends BaseSession<SaveSession> {
     }
 
     // ----------------------------------------------------------------
-    //  Chunked batch save
+    //  分块批量保存
     // ----------------------------------------------------------------
 
     /**
-     * Insert {@code entities}; emit chunked multi-row INSERTs. Each chunk is at most {@link
-     * Jorm#batchSize()} rows to respect {@code max_allowed_packet} and Surface insert-cost budgets.
+     * 插入 {@code entities};生成分块的多行 INSERT。每块最多 {@link
+     * Jorm#batchSize()} 行,以遵守 {@code max_allowed_packet} 和 Surface 的插入成本预算。
      *
-     * @return list of generated primary-key ids, one per entity. When the database does not
-     *     populate {@code getGeneratedKeys()} per-row (e.g. some older drivers), some entries may
-     *     be {@code null}.
+     * @return 生成的主键 id 列表,每个实体对应一个。当数据库不按行填充
+     *     {@code getGeneratedKeys()}(例如某些较旧的驱动)时,部分条目可能
+     *     为 {@code null}。
      */
     @API(status = API.Status.STABLE)
     public <T> List<Long> batchSave(List<T> entities) {
@@ -143,11 +148,26 @@ public class SaveSession extends BaseSession<SaveSession> {
             int end = Math.min(start + chunk, entities.size());
             ids.addAll(insertChunk(entities, start, end));
         }
+        // 将生成的主键 id 回写到实体上(针对 IDENTITY/AUTO 策略),与单行 save() 的行为
+        // 保持一致——这样调用方就无需再自行映射返回的列表。
+        // UUID 策略实体的 id 已由 autofillUuidId 设置。
+        if (entityHasGeneratedId(entities.get(0).getClass())) {
+            for (int i = 0; i < entities.size() && i < ids.size(); i++) {
+                Long id = ids.get(i);
+                if (id != null) {
+                    try {
+                        SessionHelper.setIdValue(entities.get(i), id);
+                    } catch (IllegalAccessException ignored) {
+                        // 尽力而为;id 仍会出现在返回的列表中
+                    }
+                }
+            }
+        }
         evictOnCommit(entities.get(0).getClass());
         return ids;
     }
 
-    /** Deprecated alias for {@link #batchSave}. */
+    /** {@link #batchSave} 的已弃用别名。 */
     @Deprecated
     @API(status = API.Status.DEPRECATED)
     public <T> List<Long> BatchSave(List<T> entities) {
@@ -165,6 +185,7 @@ public class SaveSession extends BaseSession<SaveSession> {
             log.error("batch insert SQL generation failed for {}", cls, e);
             throw new JormException(ErrorCode.SQL_GENERATION_FAILED, e);
         }
+        long t0 = System.nanoTime();
         try (PreparedStatement stmt =
                 connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             applyQueryOptions(stmt);
@@ -184,20 +205,23 @@ public class SaveSession extends BaseSession<SaveSession> {
                         ids.add(v);
                     }
                 }
-                // Some drivers collapse to a single key for batch — pad to size.
+                // 某些驱动对批量操作只返回单个主键——补齐到指定数量。
                 while (ids.size() < size) ids.add(null);
+                StatisticsRegistry.query().recordBatchInsert(elapsedMicros(t0));
                 return ids;
             }
         } catch (SQLException e) {
+            StatisticsRegistry.query().recordError(elapsedMicros(t0));
             throw classifiedSqlException(sql, e);
         } catch (IllegalAccessException e) {
             log.error("batch parameter binding failed: {}", sql, e);
+            StatisticsRegistry.query().recordError(elapsedMicros(t0));
             throw new JormException(ErrorCode.PARAMETER_BINDING_FAILED, e);
         }
     }
 
     // ----------------------------------------------------------------
-    //  Helpers
+    //  辅助方法
     // ----------------------------------------------------------------
 
     private static <T> void autofillUuidId(T entity) {
@@ -211,7 +235,7 @@ public class SaveSession extends BaseSession<SaveSession> {
                 id.set(entity, UUID.randomUUID());
             }
         } catch (IllegalAccessException e) {
-            // Field is setAccessible(true) by ColumnMapping; not expected.
+            // 字段已由 ColumnMapping 设置为 setAccessible(true);此处不应发生。
             throw new JormException(
                     ErrorCode.REFLECTION_ACCESS_FAILED,
                     "could not auto-fill UUID for " + entity.getClass(),
@@ -287,5 +311,9 @@ public class SaveSession extends BaseSession<SaveSession> {
     @Override
     protected SaveSession self() {
         return this;
+    }
+
+    private static long elapsedMicros(long startNanos) {
+        return (System.nanoTime() - startNanos) / 1000L;
     }
 }

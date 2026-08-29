@@ -12,23 +12,41 @@ import io.github.jadendu.exception.JormException;
 import io.github.jadendu.session.factory.Jorm;
 
 /**
- * 事务管理器
+ * 手动事务管理器。
  *
- * <p>TransactionManager用于处理手动事务和闭包事务，需要用户手动开启事务、提交事务、回滚事务、释放连接。 示例代码如下：
+ * <p>通过 ThreadLocal 管理当前线程的事务连接，需要用户手动调用 {@link #begin()} 开启事务、
+ * {@link #commit()} 提交事务、{@link #rollback()} 回滚事务、{@link #release()} 释放连接。
  *
- * <pre>        Connection connection = TransactionManager.begin();
- *         try (JormSession session = new JormSession(connection)) {
- *             ...
- *             TransactionManager.commit();
- *             ...
- *         }catch (Exception e){
- *             TransactionManager.rollback();
- *             throw ...
- *         }finally {
- *             TransactionManager.release();
- *         }</pre>
+ * <p><b>重要：连接语义说明</b>。{@code TransactionManager} 维护的是<b>自己的</b> ThreadLocal
+ * ({@code transactionConnectionHolder})，并不会将事务连接发布到 {@link
+ * CurrentTransactionConnection}。因此：
  *
- * <p>注意：需要在最后释放连接，否则会造成连接泄漏。
+ * <ul>
+ *   <li>裸的 {@code new SaveSession()} / {@code new FindSession()} 会通过 {@link
+ *       io.github.jadendu.session.factory.Jorm#getConnection()} 获取<b>另一条</b>自动提交的
+ *       连接，而<b>不会</b>加入本事务。
+ *   <li>必须把 {@link #begin()} 返回的连接<b>显式传入</b>会话构造器，例如
+ *       {@code new JormSession(conn)} 或 {@code new SaveSession(conn)}，才能让操作在同一事务内执行。
+ * </ul>
+ *
+ * <p>示例代码：
+ *
+ * <pre>{@code
+ * Connection conn = TransactionManager.begin();
+ * try (JormSession session = new JormSession(conn)) {
+ *     session.saveSession().save(user1);
+ *     session.saveSession().save(user2);
+ *     TransactionManager.commit();
+ * } catch (Exception e) {
+ *     TransactionManager.rollback();
+ *     throw e;
+ * } finally {
+ *     TransactionManager.release();   // 必须释放，否则连接泄漏
+ * }
+ * }</pre>
+ *
+ * <p>如果希望闭包内裸 {@code new SaveSession()} 自动加入事务，请改用 {@link TransactionTemplate}——
+ * 它会将连接发布到 {@link CurrentTransactionConnection}。
  *
  * @author JadenDu
  * @version 1.0

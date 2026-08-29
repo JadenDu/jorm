@@ -15,10 +15,10 @@ import io.github.jadendu.exception.ErrorCode;
 import io.github.jadendu.exception.JormException;
 
 /**
- * Thin backward-compatible adapter over {@link EntityModelRegistry}.
+ * 基于 {@link EntityModelRegistry} 的轻量级向后兼容适配器。
  *
- * <p>New code should call {@link EntityModelRegistry} directly; {@code EntityHelper} remains for
- * source-level compatibility with the 1.x API surface.
+ * <p>新代码应直接调用 {@link EntityModelRegistry};{@code EntityHelper} 保留用于
+ * 与 1.x API 表面保持源码级兼容。
  *
  * @author JadenDu
  */
@@ -27,27 +27,27 @@ public final class EntityHelper {
 
     private EntityHelper() {}
 
-    /** Insertable fields (excludes @Transient and DB-side PK strategies). */
+    /** 可插入字段(排除 @Transient 和数据库端主键策略)。 */
     public static List<Field> getInsertableFields(Class<?> cls) {
         return toFieldList(EntityModelRegistry.get(cls).insertableColumns());
     }
 
-    /** Primary-key field's physical column name. */
+    /** 主键字段对应的物理列名。 */
     public static String getIdColumnName(Class<?> cls) {
         return EntityModelRegistry.get(cls).idColumnName();
     }
 
-    /** Primary-key {@link Field}. */
+    /** 主键 {@link Field}。 */
     public static Field getIdField(Class<?> cls) {
         return EntityModelRegistry.get(cls).idField();
     }
 
-    /** Updatable fields (excludes primary key and transient). */
+    /** 可更新字段(排除主键和瞬时字段)。 */
     public static List<Field> getUpdatableFields(Class<?> cls) {
         return toFieldList(EntityModelRegistry.get(cls).updatableColumns());
     }
 
-    /** Primary-key value of an entity instance. */
+    /** 实体实例的主键值。 */
     public static Object getIdValue(Object entity) throws IllegalAccessException {
         if (entity == null) {
             throw new JormException(ErrorCode.INVALID_ENTITY, "entity must not be null");
@@ -57,8 +57,8 @@ public final class EntityHelper {
     }
 
     /**
-     * Columns that are non-null-and-not-transient — used for partial-update short-circuiting
-     * elsewhere.
+     * 非 null 且非瞬时的列——用于其他位置的局部更新短路
+     * 判断。
      */
     public static Map<String, Object> getNonNullFields(Object entity) {
         Map<String, Object> out = new LinkedHashMap<>();

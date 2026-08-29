@@ -7,9 +7,14 @@ import java.util.List;
 import org.apiguardian.api.API;
 
 /**
- * Result of a paginated query: rows on the current page plus total element and total page counts.
+ * 分页查询的结果:当前页的行数据,以及元素总数和总页数。
  *
- * @param <T> the entity type
+ * <p>同时暴露裸方法访问器({@code content()}、{@code totalElements()} 等)和 JavaBean
+ * getter({@code getContent()}、{@code getTotalElements()} 等)。JavaBean getter
+ * 确保像 Jackson 这样的 JSON 序列化器 —— 它们只识别 {@code getXxx}/{@code isXxx} 方法 ——
+ * 能够序列化每个字段,而不仅仅是 {@code isXxx} 标志。
+ *
+ * @param <T> 实体类型
  * @author JadenDu
  */
 @API(status = API.Status.STABLE)
@@ -71,5 +76,39 @@ public final class Page<T> {
 
     public int numberOfElements() {
         return content.size();
+    }
+
+    // ---- 供 JSON 序列化使用的 JavaBean getter(Jackson / Gson 等)----
+
+    public List<T> getContent() {
+        return content;
+    }
+
+    public long getTotalElements() {
+        return totalElements;
+    }
+
+    public int getPageNumber() {
+        return pageNumber;
+    }
+
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    public int getTotalPages() {
+        return totalPages();
+    }
+
+    public boolean isHasNext() {
+        return hasNext();
+    }
+
+    public boolean isHasPrevious() {
+        return hasPrevious();
+    }
+
+    public int getNumberOfElements() {
+        return numberOfElements();
     }
 }

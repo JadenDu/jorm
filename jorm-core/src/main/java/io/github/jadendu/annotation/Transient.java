@@ -9,15 +9,14 @@ import java.lang.annotation.Target;
 import org.apiguardian.api.API;
 
 /**
- * Marks an entity property as <em>non-persistent</em>: the property will not be saved, updated, or
- * filtered on, and the corresponding column is excluded from the entity's whitelist of valid SQL
- * identifiers.
+ * 将实体属性标记为<em>非持久化</em>:该属性不会被保存、更新或用于过滤,
+ * 对应的列也会从实体有效 SQL 标识符白名单中排除。
  *
- * <p>Typical use: a projection / computed field that exists only to receive an aggregate function
- * result from a {@code SELECT SUM(...)} or {@code COUNT(*)} query.
+ * <p>典型用途:投影/计算字段,仅用于接收 {@code SELECT SUM(...)} 或 {@code COUNT(*)}
+ * 查询的聚合函数结果。
  *
  * @author JadenDu
- * @see Aggregation Deprecated alias for this annotation (kept until 3.0).
+ * @see Aggregation 本注解的已弃用别名(保留至 3.0)。
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

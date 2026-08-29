@@ -24,6 +24,7 @@ import io.github.jadendu.exception.EmptyResultException;
 import io.github.jadendu.exception.ErrorCode;
 import io.github.jadendu.exception.JormException;
 import io.github.jadendu.exception.NonUniqueResultException;
+import io.github.jadendu.metrics.StatisticsRegistry;
 import io.github.jadendu.query.Page;
 import io.github.jadendu.query.Pageable;
 import io.github.jadendu.session.base.BaseSession;
@@ -32,16 +33,17 @@ import io.github.jadendu.sqlBuilder.FindBuilder;
 import io.github.jadendu.transaction.AfterCommitHooks;
 import io.github.jadendu.transaction.CurrentTransactionConnection;
 import io.github.jadendu.util.ResultSetMapper;
+import io.github.jadendu.util.SessionHelper;
 
 /**
- * Chainable query session. Use {@code try-with-resources} around every instance — even in
- * Spring-managed contexts, so the connection state is restored when the session closes.
+ * 可链式调用的查询会话。每个实例都应使用 {@code try-with-resources} 包裹——即使在 Spring
+ * 管理的上下文中也应如此,这样会话关闭时连接状态才能被正确恢复。
  *
- * <p>Both PascalCase (2.x deprecated for removal in 3.0) and camelCase (going-forward style)
- * methods are exposed. The two share the same state object — feel free to mix without surprises.
+ * <p>同时提供 PascalCase(2.x 中已弃用,将于 3.0 移除)与 camelCase(未来推荐风格)
+ * 两种方法。两者共享同一个状态对象——可放心混用而不会出现意外。
  *
- * <p>Cross-database SQL-flavours are emitted through {@link io.github.jadendu.dialect.Dialect}; the
- * active dialect is held on {@link Jorm#dialect()}.
+ * <p>跨数据库的 SQL 方言通过 {@link io.github.jadendu.dialect.Dialect} 生成;当前激活的
+ * 方言保存在 {@link Jorm#dialect()} 中。
  *
  * @author JadenDu
  */
@@ -67,23 +69,23 @@ public class FindSession extends BaseSession<FindSession> {
         super(externalConn);
     }
 
-    // ---------------- SELECT ----------------
+    // ---------------- SELECT 子句 ----------------
 
-    /** Set the SELECT clause; defaults to {@code "*"}. */
+    /** 设置 SELECT 子句;默认为 {@code "*"}。 */
     @API(status = API.Status.STABLE)
     public FindSession select(String selectClause) {
         this.selectClause = selectClause;
         return self();
     }
 
-    /** Deprecated PascalCase alias for {@link #select(String)}. */
+    /** {@link #select(String)} 的已弃用 PascalCase 别名。 */
     @Deprecated
     @API(status = API.Status.DEPRECATED)
     public FindSession Select(String selectClause) {
         return select(selectClause);
     }
 
-    // ---------------- WHERE ----------------
+    // ---------------- WHERE 条件 ----------------
 
     @API(status = API.Status.STABLE)
     public FindSession where(String column, Object value) {
@@ -111,7 +113,7 @@ public class FindSession extends BaseSession<FindSession> {
         return where(column, operator, value);
     }
 
-    // ---------------- HAVING ----------------
+    // ---------------- HAVING 条件 ----------------
 
     @API(status = API.Status.STABLE)
     public FindSession having(String column, String operator, Object value) {
@@ -126,7 +128,7 @@ public class FindSession extends BaseSession<FindSession> {
         return having(column, operator, value);
     }
 
-    // ---------------- GROUP BY ----------------
+    // ---------------- GROUP BY 分组 ----------------
 
     @API(status = API.Status.STABLE)
     public FindSession groupBy(String group) {
@@ -140,7 +142,7 @@ public class FindSession extends BaseSession<FindSession> {
         return groupBy(group);
     }
 
-    // ---------------- ORDER BY ----------------
+    // ---------------- ORDER BY 排序 ----------------
 
     @API(status = API.Status.STABLE)
     public FindSession orderBy(String orderBy) {
@@ -154,7 +156,7 @@ public class FindSession extends BaseSession<FindSession> {
         return orderBy(orderBy);
     }
 
-    // ---------------- LIMIT / OFFSET / PAGE ----------------
+    // ---------------- LIMIT / OFFSET / PAGE 分页 ----------------
 
     @API(status = API.Status.STABLE)
     public FindSession limit(Integer limit) {
@@ -176,9 +178,8 @@ public class FindSession extends BaseSession<FindSession> {
     }
 
     /**
-     * Apply a {@link Pageable} (page + size). Equivalent to setting {@code limit=size} and {@code
-     * offset=page*size}, but more ergonomic and reuses the pagination abstraction downstream
-     * components share.
+     * 应用一个 {@link Pageable}(页码 + 每页大小)。等价于设置 {@code limit=size} 与 {@code
+     * offset=page*size},但更符合人体工学,且复用了下游组件共享的分页抽象。
      */
     @API(status = API.Status.STABLE)
     public FindSession page(Pageable pageable) {
@@ -202,17 +203,17 @@ public class FindSession extends BaseSession<FindSession> {
         return limit(limit, offset);
     }
 
-    // ---------------- FIND: list ----------------
+    // ---------------- FIND: 列表查询 ----------------
 
-    /** Execute the query and return the result list. */
+    /** 执行查询并返回结果列表。 */
     @API(status = API.Status.STABLE)
     public <E> List<E> find(Class<E> clazz) {
         return executeFind(clazz);
     }
 
     /**
-     * Execute the query and return a single row. Throws {@link EmptyResultException} when zero rows
-     * returned, {@link NonUniqueResultException} when two or more.
+     * 执行查询并返回单行结果。当返回零行时抛出 {@link EmptyResultException},
+     * 返回两行及以上时抛出 {@link NonUniqueResultException}。
      */
     @API(status = API.Status.STABLE)
     public <E> E findOne(Class<E> clazz) {
@@ -230,9 +231,9 @@ public class FindSession extends BaseSession<FindSession> {
     }
 
     /**
-     * Stream the result, row-by-row, without materialising an intermediate {@code ArrayList}. The
-     * returned stream must be either exhausted or closed ({@code .close()}) by the caller — the
-     * underlying {@link ResultSet} and {@link PreparedStatement} are released exactly once.
+     * 逐行流式返回结果,而不物化中间 {@code ArrayList}。返回的流必须由调用方耗尽或
+     * 关闭({@code .close()})——底层的 {@link ResultSet} 和 {@link PreparedStatement}
+     * 恰好被释放一次。
      */
     @API(status = API.Status.STABLE)
     public <E> Stream<E> findStream(Class<E> clazz) {
@@ -266,9 +267,7 @@ public class FindSession extends BaseSession<FindSession> {
         try {
             stmt = connection.prepareStatement(sql);
             applyQueryOptions(stmt);
-            for (int i = 0; i < params.size(); i++) {
-                stmt.setObject(i + 1, params.get(i));
-            }
+            SessionHelper.bindExpandedParameters(stmt, params);
             rs = stmt.executeQuery();
         } catch (SQLException e) {
             closeQuiet(stmt, rs);
@@ -306,7 +305,7 @@ public class FindSession extends BaseSession<FindSession> {
                 });
     }
 
-    /** Deprecated PascalCase alias for {@link #find(Class)}. */
+    /** {@link #find(Class)} 的已弃用 PascalCase 别名。 */
     @Deprecated
     @API(status = API.Status.DEPRECATED)
     public <E> List<E> Find(Class<E> clazz) {
@@ -314,9 +313,8 @@ public class FindSession extends BaseSession<FindSession> {
     }
 
     /**
-     * Execute the query + accompanying COUNT(*) for a {@link Pageable}. Returns a {@link Page} that
-     * includes total element count and total pages. Resets state internally so the session can be
-     * reused.
+     * 为 {@link Pageable} 执行查询及配套的 COUNT(*) 统计。返回的 {@link Page} 中包含
+     * 总元素数与总页数。内部会重置状态,因此会话可以被复用。
      */
     @API(status = API.Status.STABLE)
     public <E> Page<E> findPage(Class<E> clazz, Pageable pageable) {
@@ -325,7 +323,7 @@ public class FindSession extends BaseSession<FindSession> {
         }
         page(pageable);
         List<E> content = executeFind(clazz);
-        // COUNT(*) query — strip LIMIT/OFFSET and ORDER BY.
+        // COUNT(*) 查询——去除 LIMIT/OFFSET 与 ORDER BY。
         long total = countAll(clazz);
         return new Page<>(content, total, pageable.pageNumber(), pageable.pageSize());
     }
@@ -368,11 +366,10 @@ public class FindSession extends BaseSession<FindSession> {
     }
 
     private <E> List<E> bindAndExecuteQuery(EntityModel model, String sql, Class<E> clazz) {
+        long t0 = System.nanoTime();
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             applyQueryOptions(stmt);
-            for (int i = 0; i < params.size(); i++) {
-                stmt.setObject(i + 1, params.get(i));
-            }
+            SessionHelper.bindExpandedParameters(stmt, params);
             try (ResultSet rs = stmt.executeQuery()) {
                 List<E> result = ResultSetMapper.mapToList(rs, clazz);
                 if (CacheManager.isCacheEnabled()
@@ -382,19 +379,22 @@ public class FindSession extends BaseSession<FindSession> {
                     CacheManager.getSecondLevelCache()
                             .put(model.entityClass().getName(), generateCacheKey(clazz), result);
                 }
+                StatisticsRegistry.query().recordSelect((System.nanoTime() - t0) / 1000L);
                 return result;
             }
         } catch (SQLException e) {
+            StatisticsRegistry.query().recordError((System.nanoTime() - t0) / 1000L);
             throw new JormException(
                     ErrorCode.QUERY_EXECUTION_FAILED, "SQL=" + sql + ", params=" + params, e);
         } catch (IllegalAccessException | InstantiationException e) {
+            StatisticsRegistry.query().recordError((System.nanoTime() - t0) / 1000L);
             throw new JormException(ErrorCode.RESULT_MAPPING_FAILED, e);
         } finally {
             resetAndClean();
         }
     }
 
-    /** Run {@code COUNT(*)} on the current conditions (ignores LIMIT/OFFSET/ORDER BY). */
+    /** 基于当前条件执行 {@code COUNT(*)} 查询(忽略 LIMIT/OFFSET/ORDER BY)。 */
     private long countAll(Class<?> cls) {
         checkIfClosed();
         if (cls == null) {
@@ -411,17 +411,20 @@ public class FindSession extends BaseSession<FindSession> {
                         havingConditions,
                         "COUNT(*)",
                         Jorm.dialect());
+        long t0 = System.nanoTime();
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            for (int i = 0; i < params.size(); i++) {
-                stmt.setObject(i + 1, params.get(i));
-            }
+            SessionHelper.bindExpandedParameters(stmt, params);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getLong(1);
+                    long cnt = rs.getLong(1);
+                    StatisticsRegistry.query().recordCount((System.nanoTime() - t0) / 1000L);
+                    return cnt;
                 }
+                StatisticsRegistry.query().recordCount((System.nanoTime() - t0) / 1000L);
                 return 0L;
             }
         } catch (SQLException e) {
+            StatisticsRegistry.query().recordError((System.nanoTime() - t0) / 1000L);
             throw new JormException(
                     ErrorCode.QUERY_EXECUTION_FAILED, "count SQL=" + sql + ", params=" + params, e);
         }
@@ -429,16 +432,15 @@ public class FindSession extends BaseSession<FindSession> {
 
     private <E> E row(ResultSet rs, Class<E> cls)
             throws SQLException, IllegalAccessException, InstantiationException {
-        // Mirror the public mapper but without consuming the row cursor here.
-        // Delegate to ReflectionResultSetMapper's per-row API by constructing an
-        // adapter. Cheapest path: re-use mapToEntity with a one-row cursor.
+        // 镜像公共映射器,但此处不消费行游标。
+        // 通过构造适配器,委托给 ReflectionResultSetMapper 的按行 API。
+        // 最廉价的方式:使用单行游标复用 mapToEntity。
         return ResultSetMapper.mapToEntity(rs, cls);
     }
 
     /**
-     * Active transactions may hold uncommitted state — never read from or populate the L2 cache
-     * mid-transaction, otherwise uncommitted rows leak into the shared cache and read-your-own
-     * writes go stale.
+     * 进行中的事务可能持有未提交的状态——切勿在事务中途读取或填充二级缓存,否则未提交的
+     * 行会泄漏到共享缓存中,且"读自己写入"的数据会变得过时。
      */
     private static boolean inActiveTransaction() {
         return CurrentTransactionConnection.hasTransaction()
@@ -464,7 +466,7 @@ public class FindSession extends BaseSession<FindSession> {
         if (orderBy != null) sb.append(":order:").append(orderBy);
         if (limit != null) sb.append(":limit:").append(limit);
         if (offset != null) sb.append(":offset:").append(offset);
-        // Invalidate cache across different runtime sessions when classloader differs
+        // 当类加载器不同时,跨不同运行时会话使缓存失效
         sb.append(":cls:").append(cls.getName());
         return sb.toString();
     }
@@ -485,12 +487,12 @@ public class FindSession extends BaseSession<FindSession> {
         try {
             if (rs != null && !rs.isClosed()) rs.close();
         } catch (SQLException ignored) {
-            // best-effort
+            // 尽力而为
         }
         try {
             if (stmt != null && !stmt.isClosed()) stmt.close();
         } catch (SQLException ignored) {
-            // best-effort
+            // 尽力而为
         }
     }
 

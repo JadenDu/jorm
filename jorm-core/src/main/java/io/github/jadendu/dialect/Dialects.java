@@ -6,11 +6,11 @@ import java.util.Locale;
 import org.apiguardian.api.API;
 
 /**
- * Convenience selector for the built-in dialect singletons based on a JDBC URL. Used by the Spring
- * Boot starter when {@code jorm.dialect} is not explicitly configured.
+ * 基于 JDBC URL 选择内置方言单例的便捷选择器。当未显式配置 {@code jorm.dialect} 时,
+ * Spring Boot starter 会使用它。
  *
- * <p>The heuristic is intentionally simple — it only inspects the {@code jdbc:subprotocol:} prefix.
- * Custom dialects (Oracle, SQL Server, ...) must be wired explicitly.
+ * <p>该启发式策略刻意保持简单——仅检查 {@code jdbc:subprotocol:} 前缀。
+ * 自定义方言(Oracle、SQL Server 等)必须显式装配。
  *
  * @author JadenDu
  */
@@ -20,8 +20,7 @@ public final class Dialects {
     private Dialects() {}
 
     /**
-     * Pick a dialect for the given JDBC URL. Returns {@link DefaultDialect} when the URL is null,
-     * blank, or unrecognised.
+     * 为给定的 JDBC URL 选择方言。当 URL 为 null、空白或无法识别时,返回 {@link DefaultDialect}。
      */
     public static Dialect forUrl(String jdbcUrl) {
         if (jdbcUrl == null) {
@@ -41,8 +40,8 @@ public final class Dialects {
     }
 
     /**
-     * Look up a dialect by canonical short name ({@code "MySQL"}, {@code "H2"}, {@code
-     * "PostgreSQL"}, {@code "Default"}). Matching is case-insensitive.
+     * 按规范的短名称查找方言({@code "MySQL"}、{@code "H2"}、{@code
+     * "PostgreSQL"}、{@code "Default"})。匹配不区分大小写。
      */
     public static Dialect byName(String name) {
         if (name == null) {

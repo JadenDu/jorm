@@ -1,7 +1,7 @@
-# Normalize line endings so Linux/macOS contributors don't get CRLF noise
+# 统一换行符为 LF,避免 Linux/macOS 贡献者遇到 CRLF 噪音
 * text=auto eol=lf
 
-# Explicit text normalization for source files
+# 源文件显式统一为文本并按 LF 规范化
 *.java     text eol=lf
 *.html     text eol=lf
 *.js       text eol=lf
@@ -27,7 +27,7 @@ CODE_OF_CONDUCT.md text eol=lf
 SECURITY.md     text eol=lf
 MAINTAINERS.md  text eol=lf
 
-# Binary files never get EOL conversion or text diffs
+# 二进制文件不进行换行符转换,也不做文本 diff
 *.gif  binary
 *.png  binary
 *.jpg  binary
@@ -40,12 +40,12 @@ MAINTAINERS.md  text eol=lf
 *.dll  binary
 *.dylib binary
 
-# Linguist tweaks for nicer GitHub blame/PR deltas
+# Linguist 调整: 让 GitHub 的 blame/PR 差异显示更准确
 *.xml linguist-detectable=true
 pom.xml linguist-language=XML
 *.sql linguist-detectable=true
 
-# Export-ignore for `git archive` so release tarballs stay lean
+# `git archive` 打包时排除这些文件,保持发布包精简
 .github export-ignore
 .editorconfig export-ignore
 .gitattributes export-ignore

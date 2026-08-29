@@ -6,9 +6,9 @@ import java.lang.reflect.Field;
 import org.apiguardian.api.API;
 
 /**
- * Immutable pairing between a Java reflection {@link Field} and its resolved physical SQL column.
- * Produced by {@link EntityModel} during entity-metadata construction and cached for the life of
- * the class.
+ * Java 反射 {@link Field} 与其解析后的物理 SQL 列之间的不可变配对。
+ * 由 {@link EntityModel} 在实体元数据构建期间生成,
+ * 并在类的整个生命周期内缓存。
  *
  * @author JadenDu
  */
@@ -25,30 +25,30 @@ public final class ColumnMapping {
         this.propertyName = propertyName;
         this.columnName = columnName;
         this.nullable = nullable;
-        // Pre-authorise reflective access once per cached field; the
-        // alternative — calling setAccessible(true) on every read/query —
-        // is wasteful in a hot path.
+        // 为每个被缓存的字段预先授权一次反射访问;
+        // 另一种做法——每次读/查询时都调用 setAccessible(true)——在热路径上
+        // 会白白浪费性能。
         field.setAccessible(true);
     }
 
-    /** The Java reflection handle. Already {@code setAccessible(true)}. */
+    /** Java 反射句柄。已调用过 {@code setAccessible(true)}。 */
     public Field field() {
         return field;
     }
 
-    /** The Java property name. */
+    /** Java 属性名。 */
     public String propertyName() {
         return propertyName;
     }
 
     /**
-     * The physical SQL column name (after {@link io.github.jadendu.entity.naming.NamingStrategy}).
+     * 物理 SQL 列名(经过 {@link io.github.jadendu.entity.naming.NamingStrategy} 处理后)。
      */
     public String columnName() {
         return columnName;
     }
 
-    /** {@code false} when {@code @Column(nullable = false)} forbids nulls. */
+    /** 当 {@code @Column(nullable = false)} 禁止 null 时返回 {@code false}。 */
     public boolean nullable() {
         return nullable;
     }

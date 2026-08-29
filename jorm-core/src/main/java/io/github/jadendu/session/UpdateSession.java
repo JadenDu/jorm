@@ -19,14 +19,16 @@ import io.github.jadendu.cache.SecondLevelCache;
 import io.github.jadendu.dto.Condition;
 import io.github.jadendu.exception.ErrorCode;
 import io.github.jadendu.exception.JormException;
+import io.github.jadendu.metrics.StatisticsRegistry;
 import io.github.jadendu.session.base.BaseSession;
 import io.github.jadendu.sqlBuilder.UpdateBuilder;
 import io.github.jadendu.transaction.AfterCommitHooks;
+import io.github.jadendu.util.SessionHelper;
 
 /**
- * UPDATE session. Conditions and SET-tabled column names are validated by the shared {@link
- * io.github.jadendu.util.SqlValidator}, so passing a non-existent column yields a typed exception
- * rather than an SQL injection vector.
+ * UPDATE 会话。条件与 SET 子句中的列名由共享的 {@link
+ * io.github.jadendu.util.SqlValidator} 校验,因此传入不存在的列会得到类型化异常,
+ * 而不是留下 SQL 注入的隐患。
  *
  * @author JadenDu
  */
@@ -47,14 +49,14 @@ public class UpdateSession extends BaseSession<UpdateSession> {
         super(externalConn);
     }
 
-    /** Specify which entity type to UPDATE. */
+    /** 指定要 UPDATE 的实体类型。 */
     @API(status = API.Status.STABLE)
     public UpdateSession model(Class<?> entityClass) {
         this.entityClass = entityClass;
         return self();
     }
 
-    /** Deprecated alias for {@link #model}. */
+    /** {@link #model} 的已弃用别名。 */
     @Deprecated
     @API(status = API.Status.DEPRECATED)
     public UpdateSession Model(Class<?> entityClass) {
@@ -97,7 +99,7 @@ public class UpdateSession extends BaseSession<UpdateSession> {
         return set(column, value);
     }
 
-    /** Execute the UPDATE statement. */
+    /** 执行 UPDATE 语句。 */
     @API(status = API.Status.STABLE)
     public void update() {
         checkIfClosed();
@@ -108,12 +110,13 @@ public class UpdateSession extends BaseSession<UpdateSession> {
             throw new JormException(ErrorCode.UPDATE_FIELD_EMPTY);
         }
         if (conditions.isEmpty()) {
-            // Refuse unrestricted UPDATE by default to prevent accidental
-            // full-table writes; require the caller to opt in via Where.
+            // 默认拒绝无条件的 UPDATE,以防止意外的
+            // 全表写入;要求调用方通过 Where 显式选择。
             throw new JormException(ErrorCode.CONDITION_NOT_SPECIFIED);
         }
 
         String sql = null;
+        long t0 = System.nanoTime();
         try {
             sql = UpdateBuilder.buildUpdateSql(entityClass, conditions, updates);
             log.debug(
@@ -124,26 +127,31 @@ public class UpdateSession extends BaseSession<UpdateSession> {
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {
                 applyQueryOptions(stmt);
                 int parameterIndex = 1;
+                // SET 子句:每个被更新的列一个占位符,不做 IN 展开。
                 for (Object value : updates.values()) {
-                    stmt.setObject(parameterIndex++, value);
+                    SessionHelper.bindParameter(stmt, parameterIndex, value, value == null ? null : value.getClass());
+                    parameterIndex++;
                 }
-                for (Condition cond : conditions) {
-                    stmt.setObject(parameterIndex++, cond.getValue());
-                }
+                // WHERE 子句:将 IN 集合展开为多个占位符。
+                List<Object> whereParams =
+                        conditions.stream().map(Condition::getValue).collect(Collectors.toList());
+                parameterIndex = SessionHelper.bindExpandedParametersFrom(stmt, whereParams, parameterIndex);
                 int affected = stmt.executeUpdate();
                 log.debug("UPDATE affected {} row(s): {}", affected, sql);
             }
         } catch (SQLException e) {
+            StatisticsRegistry.query().recordError((System.nanoTime() - t0) / 1000L);
             throw new JormException(ErrorCode.UPDATE_EXECUTION_FAILED, "SQL=" + sql, e);
         } finally {
             conditions.clear();
             updates.clear();
             resetQueryOptions();
         }
+        StatisticsRegistry.query().recordUpdate((System.nanoTime() - t0) / 1000L);
         evictOnCommit(entityClass);
     }
 
-    /** Deprecated alias for {@link #update}. */
+    /** {@link #update} 的已弃用别名。 */
     @Deprecated
     @API(status = API.Status.DEPRECATED)
     public void Update() {

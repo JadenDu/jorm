@@ -8,14 +8,14 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import io.github.jadendu.transaction.AfterCommitHooks.SpringSupport;
 
 /**
- * Spring integration: register the supplied callback to fire after the current Spring-managed
- * transaction commits. This class is loaded lazily through {@link AfterCommitHooks#register} only
- * when {@code TransactionSynchronizationManager} is present on the runtime classpath; {@code jorm}
- * users without Spring never see this class load.
+ * Spring 集成：注册提供的回调，使其在当前 Spring 管理的事务提交后触发。本类仅在运行时
+ * classpath 上存在 {@code TransactionSynchronizationManager} 时通过
+ * {@link AfterCommitHooks#register} 懒加载；classpath 上没有 Spring 的 {@code jorm}
+ * 用户永远不会看到本类被加载。
  *
- * <p>Cache eviction registered by {@link io.github.jadendu.session.SaveSession} now fires when the
- * surrounding {@code @Transactional} commits, not on save-time, so concurrent readers never fill
- * the cache from a not-yet-visible transaction.
+ * <p>由 {@link io.github.jadendu.session.SaveSession} 注册的缓存驱逐操作现在会在外层
+ * {@code @Transactional} 提交时触发，而非保存时，因此并发读者永远不会从
+ * 尚未可见的事务中填充缓存。
  *
  * @author JadenDu
  */

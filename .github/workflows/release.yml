@@ -61,8 +61,8 @@ jobs:
           if [ -z "$VERSION" ]; then
             VERSION="${GITHUB_REF_NAME#v}"
           fi
-          # versions:set -N only updates the root (aggregator) pom; because
-          # sub-modules inherit version via <parent>, they follow automatically.
+          # versions:set -N 只更新根 (聚合器) pom;由于子模块通过
+          # <parent> 继承版本号,它们会自动跟随更新。
           mvn versions:set -N -DnewVersion=$VERSION -DgenerateBackupPoms=false
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}

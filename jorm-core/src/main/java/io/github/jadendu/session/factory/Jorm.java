@@ -21,16 +21,16 @@ import io.github.jadendu.session.UpdateSession;
 import io.github.jadendu.transaction.CurrentTransactionConnection;
 
 /**
- * Factory entry point for the core {@code io.github.jadendu} module.
+ * 核心 {@code io.github.jadendu} 模块的工厂入口。
  *
- * <p>Holds the runtime singletons ({@link DataSource} and {@link Dialect}) needed by every {@code
- * Session} when no external {@link Connection} is supplied by the caller. Configuration of these
- * singletons is normally done by the Spring Boot starter via {@link #setDataSource(DataSource)} and
- * {@link #setDialect(Dialect)} after initialisation; standalone users must call the setters
- * themselves before opening the first session.
+ * <p>当调用方未提供外部 {@link Connection} 时,保存每个 {@code
+ * Session} 所需的运行时单例({@link DataSource} 与 {@link Dialect})。这些
+ * 单例的配置通常由 Spring Boot starter 在初始化后通过 {@link #setDataSource(DataSource)} 和
+ * {@link #setDialect(Dialect)} 完成;独立(非 Spring)用户必须在打开第一个会话
+ * 之前自行调用 setter 方法。
  *
- * <p>The singletons are {@code volatile} so the visibility guarantees required by the JMM hold
- * across threads without resorting to external synchronisation on read.
+ * <p>这些单例声明为 {@code volatile},从而在跨线程读取时无需借助外部同步
+ * 即可满足 JMM 所要求的内存可见性保证。
  *
  * @author JadenDu
  */
@@ -39,19 +39,19 @@ public final class Jorm {
 
     private static final Logger log = LoggerFactory.getLogger(Jorm.class);
 
-    /** Spring-managed (or standalone-configured) connection source. */
+    /** Spring 管理(或独立配置)的连接源。 */
     private static volatile DataSource dataSource;
 
-    /** SQL-flavour adapter; defaults to the catch-all MySQL/PG/H2 dialect. */
+    /** SQL 方言适配器;默认为通用的 MySQL/PG/H2 方言。 */
     private static volatile Dialect dialect = DefaultDialect.INSTANCE;
 
-    /** Maximum rows emitted per multi-row INSERT (chunk for {@code batchSave}). */
+    /** 每个多行 INSERT 的最大行数({@code batchSave} 的分块大小)。 */
     private static volatile int batchSize = 100;
 
     private Jorm() {}
 
     /**
-     * Inject the {@link DataSource}; never null. Required before any unconnected {@code Session}.
+     * 注入 {@link DataSource};不可为 null。任何无连接的 {@code Session} 使用前都必须调用。
      */
     @API(status = API.Status.STABLE)
     public static void setDataSource(DataSource dataSource) {
@@ -62,19 +62,19 @@ public final class Jorm {
         log.debug("DataSource configured: {}", dataSource.getClass().getName());
     }
 
-    /** Read whether a {@link DataSource} has been configured. */
+    /** 读取是否已配置 {@link DataSource}。 */
     @API(status = API.Status.STABLE)
     public static boolean isConfigured() {
         return dataSource != null;
     }
 
-    /** Read the active {@link DataSource} (or {@code null} when unconfigured). */
+    /** 读取激活的 {@link DataSource}(未配置时为 {@code null})。 */
     @API(status = API.Status.STABLE)
     public static DataSource dataSource() {
         return dataSource;
     }
 
-    /** Read/replace the active dialect; defaults to {@link DefaultDialect}. */
+    /** 读取/替换激活的方言;默认为 {@link DefaultDialect}。 */
     @API(status = API.Status.STABLE)
     public static Dialect dialect() {
         return dialect;
@@ -86,7 +86,7 @@ public final class Jorm {
         log.debug("Dialect configured: {}", dialect.name());
     }
 
-    /** Read/replace the multi-row INSERT chunk size (used by {@link SaveSession#batchSave}). */
+    /** 读取/替换多行 INSERT 的分块大小(由 {@link SaveSession#batchSave} 使用)。 */
     @API(status = API.Status.STABLE)
     public static int batchSize() {
         return batchSize;
@@ -102,7 +102,7 @@ public final class Jorm {
     }
 
     // ------------------------------------------------------------------
-    // Session factories
+    // 会话工厂
     // ------------------------------------------------------------------
 
     @API(status = API.Status.STABLE)
@@ -146,8 +146,8 @@ public final class Jorm {
     }
 
     /**
-     * Resolve a {@link Connection}: an active transaction connection first, otherwise a fresh one
-     * from the configured {@link DataSource}.
+     * 解析 {@link Connection}:优先使用当前激活事务的连接,否则
+     * 从已配置的 {@link DataSource} 获取一个新的连接。
      */
     @API(status = API.Status.STABLE)
     public static Connection getConnection() {

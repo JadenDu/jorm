@@ -4,30 +4,28 @@ package io.github.jadendu.entity.naming;
 import org.apiguardian.api.API;
 
 /**
- * Conversion: Java identifier (camelCase or PascalCase) {@code ->} physical SQL identifier in
- * {@code snake_case}. This is JORM's out-of-the-box strategy and aligns with the dominant Java/SQL
- * convention.
+ * 转换规则:将 Java 标识符(camelCase 或 PascalCase)转换为 {@code snake_case}
+ * 形式的物理 SQL 标识符。这是 JORM 开箱即用的策略,与主流的 Java/SQL 惯例保持一致。
  *
- * <p>Examples:
+ * <p>示例:
  *
  * <ul>
  *   <li>{@code firstName} {@code ->} {@code first_name}
- *   <li>{@code HTTPExecutor} {@code ->} {@code h_t_t_p_executor} (grouped acronyms are split; see
- *       <b>Limitations</b>)
- *   <li>{@code User} {@code ->} {@code users} (singular {@code ->} plural)
+ *   <li>{@code HTTPExecutor} {@code ->} {@code h_t_t_p_executor}(连续的大写缩写会被拆分;参见
+ *       <b>局限性</b>)
+ *   <li>{@code User} {@code ->} {@code users}(单数 {@code ->} 复数)
  *   <li>{@code OrderItem} {@code ->} {@code order_items}
  * </ul>
  *
- * <p><b>Limitations:</b> the pluralisation rule is naive — it adds an {@code "s"} and converts
- * trailing {@code "y" -> "ies"}. Supply a custom {@link NamingStrategy} when your domain needs
- * smarter rules.
+ * <p><b>局限性:</b> 复数化规则较为简单——只添加一个 {@code "s"} 并将结尾的
+ * {@code "y" -> "ies"}。当你的领域需要更智能的规则时,请提供自定义的 {@link NamingStrategy}。
  *
  * @author JadenDu
  */
 @API(status = API.Status.STABLE)
 public class DefaultNamingStrategy implements NamingStrategy {
 
-    /** Singleton instance — the class is stateless. */
+    /** 单例实例——该类是无状态的。 */
     public static final DefaultNamingStrategy INSTANCE = new DefaultNamingStrategy();
 
     @Override

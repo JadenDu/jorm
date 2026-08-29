@@ -12,16 +12,17 @@ import io.github.jadendu.entity.EntityModel;
 import io.github.jadendu.entity.EntityModelRegistry;
 import io.github.jadendu.exception.ErrorCode;
 import io.github.jadendu.exception.JormException;
+import io.github.jadendu.util.SqlBuilderHelper;
 import io.github.jadendu.util.SqlValidator;
 
 /**
- * Static DELETE builder. Three families of DELETEs: by primary key / by batch of primary keys / by
- * conditions (optionally with LIMIT).
+ * 静态 DELETE 构建器。支持三类 DELETE：按主键 / 按主键批量 /
+ * 按条件（可选带 LIMIT）。
  *
- * <p>With the conditions-API, WHERE columns and operators are validated against the active entity
- * model; the LIMIT clause is rendered by the active {@link Dialect}. WARNING: not every dialect
- * supports a {@code DELETE ... LIMIT} clause; PostgreSQL rejects it. The application is responsible
- * for not configuring a limit on dialects that forbid it.
+ * <p>使用条件 API 时，WHERE 列与操作符会针对当前实体模型进行校验；
+ * LIMIT 子句由当前 {@link Dialect} 渲染。警告：并非所有方言都支持
+ * {@code DELETE ... LIMIT} 子句；PostgreSQL 会拒绝该语法。应用程序应负责
+ * 在禁止该语法的方言上不配置 limit。
  *
  * @author JadenDu
  */
@@ -30,7 +31,7 @@ public final class DeleteBuilder {
 
     private DeleteBuilder() {}
 
-    /** Single-row {@code DELETE} on the primary-key column. */
+    /** 基于主键列的单行 {@code DELETE}。 */
     @API(status = API.Status.STABLE)
     public static String buildSingleDelete(Class<?> cls) {
         EntityModel model = EntityModelRegistry.get(cls);
@@ -39,8 +40,8 @@ public final class DeleteBuilder {
     }
 
     /**
-     * Batch {@code DELETE} by primary-key IN-clause. Callers supply {@code batchSize}; namespacing
-     * avoids passing collections by ref.
+     * 通过主键 IN 子句进行批量 {@code DELETE}。调用方提供 {@code batchSize}，
+     * 从而避免按引用传递集合。
      */
     @API(status = API.Status.STABLE)
     public static String buildBatchDelete(Class<?> cls, int batchSize) {
@@ -58,7 +59,7 @@ public final class DeleteBuilder {
                 "DELETE FROM %s WHERE %s IN (%s)", model.tableName(), model.idColumnName(), inList);
     }
 
-    /** Conditional {@code DELETE} with optional {@code LIMIT/OFFSET}. */
+    /** 带可选 {@code LIMIT/OFFSET} 的条件 {@code DELETE}。 */
     @API(status = API.Status.STABLE)
     public static String buildClassDelete(
             Class<?> cls,
@@ -75,14 +76,14 @@ public final class DeleteBuilder {
         if (conditions != null && !conditions.isEmpty()) {
             List<String> whereParts = new ArrayList<>(conditions.size());
             for (Condition cond : conditions) {
-                whereParts.add(cond.getColumn() + " " + cond.getOperator() + " ?");
+                whereParts.add(SqlBuilderHelper.renderCondition(cond));
             }
             sql.append(" WHERE ").append(String.join(" AND ", whereParts));
         }
 
         if (limit != null || offset != null) {
             if (dialect != null && dialect.supportsIdentity()) {
-                // ChatColor's default impl renders `LIMIT ? [OFFSET ?]`
+                // ChatColor 的默认实现会渲染 `LIMIT ? [OFFSET ?]`
                 String clause = dialect.getLimitClause(limit, offset);
                 if (clause != null && !clause.isEmpty()) {
                     sql.append(clause);

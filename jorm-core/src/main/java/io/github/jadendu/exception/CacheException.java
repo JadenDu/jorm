@@ -4,9 +4,8 @@ package io.github.jadendu.exception;
 import org.apiguardian.api.API;
 
 /**
- * Thrown when the L2 cache layer reports a serious failure — e.g. an unreachable Redis, a
- * serialisation mismatch, or an invalid cache-key shape. Cache misses are <em>not</em> raised; they
- * fall through to the database silently.
+ * 当 L2 缓存层报告严重故障时抛出——例如 Redis 不可达、序列化不匹配或缓存键形状无效。
+ * 缓存未命中<em>不会</em>抛出该异常;未命中会静默地落到数据库层处理。
  *
  * @author JadenDu
  */

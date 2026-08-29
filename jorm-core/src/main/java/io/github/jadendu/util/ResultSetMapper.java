@@ -16,19 +16,19 @@ import io.github.jadendu.exception.ErrorCode;
 import io.github.jadendu.exception.JormException;
 
 /**
- * Map a {@link java.sql.ResultSet} row into an entity instance, choosing the correct {@link
- * TypeHandler} per field. Two kinds of fields are mapped:
+ * 将 {@link java.sql.ResultSet} 行映射为实体实例,并为每个字段选择正确的 {@link
+ * TypeHandler}。映射两类字段:
  *
  * <ul>
- *   <li>persistent fields via {@link EntityModel#findByName(String)} — these use the physical
- *       column name resolved once at metadata-build time; and
- *   <li>{@code @Transient} / legacy {@code @Aggregation} projection fields are also mapped by their
- *       Java property name (or {@code AS} alias), so aggregate functions like {@code SUM(...) AS
- *       totalAge} continue to land back on the entity exactly as before.
+ *   <li>通过 {@link EntityModel#findByName(String)} 映射持久化字段——它们使用元数据构建时
+ *       一次性解析出的物理列名;以及
+ *   <li>{@code @Transient} / 遗留的 {@code @Aggregation} 投影字段也会按其
+ *       Java 属性名(或 {@code AS} 别名)映射,因此像 {@code SUM(...) AS
+ *       totalAge} 这样的聚合函数仍会像以前一样精确地回填到实体上。
  * </ul>
  *
- * <p>Result-set column labels are compared case-insensitively to be friendly to BOTH
- * uppercase-folding databases (H2/PostgreSQL) and lowercase-folding ones (MySQL on Linux).
+ * <p>结果集的列标签采用不区分大小写的方式比较,以同时兼容
+ * 大写折叠数据库(H2/PostgreSQL)和小写折叠数据库(Linux 上的 MySQL)。
  *
  * @author JadenDu
  */
@@ -70,7 +70,7 @@ public final class ResultSetMapper {
         }
 
         EntityModel model = EntityModelRegistry.get(cls);
-        // ---- Persistent fields: from the cached model mapping ----
+        // ---- 持久化字段:来自缓存的模型映射 ----
         for (io.github.jadendu.entity.ColumnMapping mapping : model.insertableColumns()) {
             fillField(
                     rs,
@@ -93,7 +93,7 @@ public final class ResultSetMapper {
             io.github.jadendu.entity.ColumnMapping id = model.idMapping();
             fillField(rs, entity, id.field(), id.columnName(), columnNamesLower, aliasToLowerName);
         }
-        // ---- Projection fields (@Transient / deprecated @Aggregation) ----
+        // ---- 投影字段(@Transient / 已弃用的 @Aggregation) ----
         for (Field field : allDeclaredFields(cls)) {
             if (Modifier.isStatic(field.getModifiers()) || field.isSynthetic()) continue;
             if (model.isValidColumn(field.getName())) continue;
@@ -102,7 +102,7 @@ public final class ResultSetMapper {
                             || field.isAnnotationPresent(
                                     io.github.jadendu.annotation.Aggregation.class);
             if (!isTransient) continue;
-            // Use the property name verbatim (lower-case comparison).
+            // 原样使用属性名(转为小写后比较)。
             fillField(rs, entity, field, field.getName(), columnNamesLower, aliasToLowerName);
         }
         return entity;
@@ -126,7 +126,7 @@ public final class ResultSetMapper {
     }
 
     /**
-     * All declared fields across the type hierarchy (excludes {@link Object} and synthetic ones).
+     * 类型层级中的所有已声明字段(排除 {@link Object} 和合成字段)。
      */
     private static Iterable<Field> allDeclaredFields(Class<?> cls) {
         java.util.List<Field> out = new java.util.ArrayList<>();
@@ -167,7 +167,7 @@ public final class ResultSetMapper {
         }
     }
 
-    /** Initialise the field's setAccessible flag for callers that cache reflection handles. */
+    /** 为缓存反射句柄的调用方初始化字段的 setAccessible 标志。 */
     static Field persistentFieldFor(Class<?> cls, String name) {
         return io.github.jadendu.entity.EntityModelRegistry.get(cls).findByName(name).field();
     }

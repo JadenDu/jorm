@@ -6,11 +6,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apiguardian.api.API;
 
 /**
- * Counters for execution of the four CRUD session families.
+ * 四类 CRUD 会话执行的计数器。
  *
- * <p>All operations are atomic &mdash; thread-safe by construction. The type contains <em>long</em>
- * counters only; size and durations in microseconds, plus a {@code complexQuery} channel for
- * framework internals that ranged query paths might classify distinctly.
+ * <p>所有操作均为原子操作 &mdash; 结构上保证线程安全。该类型仅包含 <em>long</em>
+ * 计数器;耗时以微秒计,外加一个供框架内部使用的 {@code complexQuery} 通道,
+ * 供范围查询路径进行区分归类。
  *
  * @author JadenDu
  */

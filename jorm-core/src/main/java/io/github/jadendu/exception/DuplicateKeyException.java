@@ -4,12 +4,12 @@ package io.github.jadendu.exception;
 import org.apiguardian.api.API;
 
 /**
- * Thrown when an {@code INSERT} violates a {@code UNIQUE} or {@code PRIMARY KEY} constraint, as
- * reported by the active {@link io.github.jadendu.dialect.Dialect}.
+ * 当 {@code INSERT} 违反 {@code UNIQUE} 或 {@code PRIMARY KEY} 约束时抛出,
+ * 由活动的 {@link io.github.jadendu.dialect.Dialect} 报告。
  *
- * <p>Migration note: pre-2.0 this case surfaced as the generic {@link
- * ErrorCode#SQL_EXECUTION_FAILED}. Catching {@code DuplicateKeyException} is now the documented way
- * to react.
+ * <p>迁移说明:2.0 之前,该情况以通用的 {@link
+ * ErrorCode#SQL_EXECUTION_FAILED} 呈现。现在捕获 {@code DuplicateKeyException}
+ * 是文档化的应对方式。
  *
  * @author JadenDu
  */

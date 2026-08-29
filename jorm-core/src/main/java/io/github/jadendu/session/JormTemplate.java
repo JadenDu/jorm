@@ -14,22 +14,22 @@ import io.github.jadendu.query.Pageable;
 import io.github.jadendu.session.base.JormSession;
 
 /**
- * DI-friendly entry point — Spring-style bean over a session factory.
+ * 面向依赖注入的友好入口——基于会话工厂的 Spring 风格 Bean。
  *
- * <p>Reasons to prefer {@code JormTemplate} over direct {@code new FindSession()}/{@code
- * Jorm.findSession()}:
+ * <p>相比于直接使用 {@code new FindSession()}/{@code
+ * Jorm.findSession()},推荐 {@code JormTemplate} 的理由:
  *
  * <ul>
- *   <li>Better testability — the underlying {@link JormSession} access can be mocked without
- *       statically wiring {@link io.github.jadendu.session.factory.Jorm}.
- *   <li>Single place to inject cross-cutting concerns (statistics, tracing) in 2.x point releases
- *       without breaking callers.
- *   <li>Consistent lifecycle: every invocation wraps its session in a {@code try-with-resources}
- *       and only the result is exposed.
+ *   <li>更好的可测试性——底层的 {@link JormSession} 访问可以被 mock,而无需
+ *       静态装配 {@link io.github.jadendu.session.factory.Jorm}。
+ *   <li>在 2.x 次版本中注入横切关注点(统计、追踪)的单一位置,
+ *       且不会破坏调用方。
+ *   <li>一致的生命周期:每次调用都将会话包裹在 {@code try-with-resources}
+ *       中,只对外暴露结果。
  * </ul>
  *
- * <p>Standalone users can also use it by constructing the bean directly after calling {@link
- * io.github.jadendu.session.factory.Jorm#setDataSource}:
+ * <p>独立(非 Spring)用户也可以在调用 {@link
+ * io.github.jadendu.session.factory.Jorm#setDataSource} 后直接构造该 Bean 来使用:
  *
  * <pre>{@code
  * JormTemplate jorm = new JormTemplate();
@@ -42,7 +42,7 @@ import io.github.jadendu.session.base.JormSession;
 @API(status = API.Status.STABLE)
 public class JormTemplate {
 
-    /** Run a single save and write back any auto-generated primary key. */
+    /** 执行单次保存,并回写任何自动生成的主键。 */
     @API(status = API.Status.STABLE)
     public <T> void save(T entity) {
         try (SaveSession s = new SaveSession()) {
@@ -51,8 +51,8 @@ public class JormTemplate {
     }
 
     /**
-     * Run a batch INSERT and return the generated ids; chunked per {@link
-     * io.github.jadendu.session.factory.Jorm#batchSize()}.
+     * 执行批量 INSERT 并返回生成的主键 id;按 {@link
+     * io.github.jadendu.session.factory.Jorm#batchSize()} 分块执行。
      */
     @API(status = API.Status.STABLE)
     public <T> List<Long> batchSave(List<T> entities) {
@@ -61,7 +61,7 @@ public class JormTemplate {
         }
     }
 
-    /** Generic finder for callers requiring ad-hoc clauses. */
+    /** 面向需要临时子句的调用方的通用查询方法。 */
     @API(status = API.Status.STABLE)
     public <T> List<T> find(Function<FindSession, List<T>> action) {
         try (FindSession s = new FindSession()) {
@@ -76,7 +76,7 @@ public class JormTemplate {
         }
     }
 
-    /** Stream-style finder; the {@link Stream} is closed automatically. */
+    /** 流式查询方法;{@link Stream} 会被自动关闭。 */
     @API(status = API.Status.STABLE)
     public <T> List<T> findAsList(Function<FindSession, Stream<T>> action) {
         try (FindSession s = new FindSession();
@@ -85,7 +85,7 @@ public class JormTemplate {
         }
     }
 
-    /** Paginated query: builds SELECT + COUNT for total-element binding. */
+    /** 分页查询:构建 SELECT + COUNT 以绑定总元素数。 */
     @API(status = API.Status.STABLE)
     public <T> Page<T> findPage(Class<T> cls, Pageable pageable) {
         try (FindSession s = new FindSession()) {
@@ -93,7 +93,7 @@ public class JormTemplate {
         }
     }
 
-    /** Generic update; respects validation/security injected upstream. */
+    /** 通用更新;遵循上游注入的校验/安全逻辑。 */
     @API(status = API.Status.STABLE)
     public void update(Function<UpdateSession, UpdateSession> action) {
         try (UpdateSession s = new UpdateSession()) {
@@ -101,7 +101,7 @@ public class JormTemplate {
         }
     }
 
-    /** Delete a single entity by its primary key. */
+    /** 按主键删除单个实体。 */
     @API(status = API.Status.STABLE)
     public <T> void delete(T entity) {
         try (DeleteSession s = new DeleteSession()) {
@@ -109,7 +109,7 @@ public class JormTemplate {
         }
     }
 
-    /** Conditional delete; the supplied builder registers WHERE/LIMIT clauses. */
+    /** 条件删除;传入的构建器负责注册 WHERE/LIMIT 子句。 */
     @API(status = API.Status.STABLE)
     public <T> void delete(Class<T> cls, Function<DeleteSession, DeleteSession> action) {
         try (DeleteSession s = new DeleteSession()) {
@@ -118,8 +118,8 @@ public class JormTemplate {
     }
 
     /**
-     * Treat the supplied closed callback as a multi-statement block; opens a unified {@link
-     * JormSession} that manages all four CRUD sessions through a shared connection.
+     * 将传入的闭包回调视为多语句代码块;开启一个统一的 {@link
+     * JormSession},通过共享连接管理全部四种 CRUD 会话。
      */
     @API(status = API.Status.EXPERIMENTAL)
     public <R> R executeIn(JormSession block, Function<JormSession, R> action) {
@@ -129,8 +129,8 @@ public class JormTemplate {
     }
 
     /**
-     * Read-only hook into the cached {@link EntityModel} registry for callers that need it for type
-     * inspection.
+     * 为需要类型检查的调用方提供对缓存 {@link EntityModel} 注册表的只读
+     * 访问入口。
      */
     @API(status = API.Status.EXPERIMENTAL)
     public EntityModel modelOf(Class<?> cls) {

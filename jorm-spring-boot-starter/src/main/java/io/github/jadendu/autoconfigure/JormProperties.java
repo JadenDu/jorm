@@ -13,10 +13,9 @@ import io.github.jadendu.exception.ErrorCode;
 import io.github.jadendu.exception.JormException;
 
 /**
- * Configuration surface for {@code jorm.*} properties.
+ * {@code jorm.*} 属性的配置入口。
  *
- * <p>Bean-managed defaults are applied by {@link JormAutoConfiguration} based on the resolved
- * values on this class.
+ * <p>由 {@link JormAutoConfiguration} 基于本类解析后的值应用框架管理的默认配置。
  *
  * @author JadenDu
  */
@@ -35,21 +34,21 @@ public class JormProperties {
     private long maxLifetime = 1800000;
 
     /**
-     * Multi-row INSERT chunk size (also the upper bound on a single {@code INSERT VALUES (...),
-     * (...)...}). Defaults to 100 rows.
+     * 多行 INSERT 的批量大小(也是单条 {@code INSERT VALUES (...),
+     * (...)...} 语句写入行数的上限)。默认 100 行。
      */
     private int batchSize = 100;
 
     /**
-     * Dialect selection. Value can be: {@code "MySQL"}, {@code "PostgreSQL"}, {@code "H2"}, {@code
-     * "Default"}, or omitted (auto-detected from {@link #jdbcUrl}).
+     * 方言选择。取值可为: {@code "MySQL"}、{@code "PostgreSQL"}、{@code "H2"}、{@code
+     * "Default"},或不设置(根据 {@link #jdbcUrl} 自动探测)。
      */
     private String dialect;
 
     /**
-     * Naming strategy. Possible values: {@code "default"} (snake_case + pluralised tables), {@code
-     * "identity"} (use Java identifiers verbatim), or the fully-qualified class name of a custom
-     * {@link io.github.jadendu.entity.naming.NamingStrategy}.
+     * 命名策略。可选值: {@code "default"}(snake_case 表名 + 复数形式)、{@code "identity"}
+     * (原样使用 Java 标识符),或自定义 {@link io.github.jadendu.entity.naming.NamingStrategy}
+     * 的全限定类名。
      */
     private String namingStrategy = "default";
 
@@ -149,7 +148,7 @@ public class JormProperties {
         this.namingStrategy = v;
     }
 
-    /** Resolve the active dialect using properties' explicit name + JDBC URL fallback. */
+    /** 解析生效的方言: 优先使用属性中的显式名称,否则回退到根据 JDBC URL 自动探测。 */
     @API(status = API.Status.INTERNAL)
     public Dialect resolveDialect() {
         if (dialect != null && !diactionBlankOrKeyword(dialect)) {
@@ -161,7 +160,7 @@ public class JormProperties {
         return Dialects.forUrl(jdbcUrl);
     }
 
-    /** Resolve the active naming strategy by name or class-name. */
+    /** 按名称或类名解析生效的命名策略。 */
     @API(status = API.Status.INTERNAL)
     public NamingStrategy resolveNamingStrategy() {
         if (namingStrategy == null

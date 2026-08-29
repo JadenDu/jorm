@@ -22,19 +22,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apiguardian.api.API;
 
 /**
- * Read a database column into the requested Java type.
+ * 将数据库列读取为所请求的 Java 类型。
  *
- * <p>The default registry covers every type the framework needs out of the box: primitive boxes and
- * wrappers, {@link String}, {@link BigDecimal}, {@link BigInteger}, byte arrays, {@code
- * java.util.Date}, the {@code java.time} family, {@link UUID}, and {@link Enum}s. Users can plug in
- * additional handlers with {@link #register(Class, TypeHandler)}.
+ * <p>默认注册表覆盖了框架开箱即用所需的所有类型:基本类型的装箱类与
+ * 包装类、{@link String}、{@link BigDecimal}、{@link BigInteger}、字节数组、{@code
+ * java.util.Date}、{@code java.time} 家族、{@link UUID} 和 {@link Enum}。用户可以通过
+ * {@link #register(Class, TypeHandler)} 注册额外的处理器。
  *
  * <pre>{@code
  * TypeHandler.register(Money.class, (rs, col, type) -> Money.of(rs.getBigDecimal(col)));
  * }</pre>
  *
- * <p>Functions passed to {@code register} are called from a hot path; keep them allocation-free and
- * never throw inside unless genuinely invalid.
+ * <p>传给 {@code register} 的函数会在热路径上被调用;请让它们保持零分配,且除非确实
+ * 无效,否则不要在内部抛出异常。
  *
  * @author JadenDu
  */
@@ -43,53 +43,52 @@ import org.apiguardian.api.API;
 public interface TypeHandler {
 
     /**
-     * Read column {@code col} from {@code rs} and return a value compatible with {@code type}.
-     * Implementations are responsible for honoring SQL NULL — see {@link
-     * #nullAware(java.sql.ResultSet, Object, boolean)} for the cheapest alternative to writing the
-     * same {@code wasNull()} toggle every time.
+     * 从 {@code rs} 读取列 {@code col},并返回与 {@code type} 兼容的值。
+     * 实现负责正确处理 SQL NULL——参见 {@link
+     * #nullAware(java.sql.ResultSet, Object, boolean)},这是避免每次重复编写
+     * {@code wasNull()} 判断的最省事方案。
      */
     Object handle(ResultSet rs, String col, Class<?> type) throws SQLException;
 
     /**
-     * Register (or override) a handler for {@code type}. Runtime calls are safe under the hooded
-     * {@link ConcurrentHashMap}; user-supplied handlers are fed first to a {@code
-     * TypeHandler.forType(type)} lookup.
+     * 为 {@code type} 注册(或覆盖)处理器。运行时调用在底层的
+     * {@link ConcurrentHashMap} 支撑下是线程安全的;用户提供的处理器会优先通过 {@code
+     * TypeHandler.forType(type)} 查找命中。
      */
     @API(status = API.Status.STABLE)
     static void register(Class<?> type, TypeHandler handler) {
         Registry.register(type, handler);
     }
 
-    /** Remove a previously-registered handler. */
+    /** 移除先前注册的处理器。 */
     @API(status = API.Status.EXPERIMENTAL)
     static void unregister(Class<?> type) {
         Registry.unregister(type);
     }
 
     /**
-     * Look up a handler for {@code type}; returns {@code null} when no handler is registered.
-     * Callers (notably {@link ResultSetMapper}) fall back to {@link ResultSet#getObject(String)} in
-     * that case.
+     * 查找 {@code type} 对应的处理器;未注册时返回 {@code null}。
+     * 此时调用方(尤其是 {@link ResultSetMapper})会回退到 {@link ResultSet#getObject(String)}。
      */
     static TypeHandler forType(Class<?> type) {
         return Registry.forType(type);
     }
 
     // -----------------------------------------------------------------
-    // Helpers for composing wasNull-tolerant handlers without boilerplate.
+    // 用于无样板代码地组合容忍 wasNull 的处理器的辅助方法。
     // -----------------------------------------------------------------
 
     /**
-     * Memoise the "when SQL NULL, return X" idiom: the supplied {@code raw} is read first, and when
-     * {@link ResultSet#wasNull()} returns true, the supplied {@code nullValue} is returned instead.
+     * 封装"SQL NULL 时返回 X"这一惯用写法:先读取传入的 {@code raw},当
+     * {@link ResultSet#wasNull()} 返回 true 时,改为返回传入的 {@code nullValue}。
      */
     static Object nullAware(ResultSet rs, Object raw, Object nullValue) throws SQLException {
         return rs.wasNull() ? nullValue : raw;
     }
 
     /**
-     * Variant of {@link #nullAware} that converts NULL to typed default (0 / false / null)
-     * depending on whether {@code type} is the primitive or the wrapper.
+     * {@link #nullAware} 的变体,根据 {@code type} 是基本类型还是包装类,
+     * 将 NULL 转换为带类型的默认值(0 / false / null)。
      */
     static Object primitiveNull(ResultSet rs, Object raw, Class<?> type, Object primitiveDefault)
             throws SQLException {
@@ -97,16 +96,16 @@ public interface TypeHandler {
     }
 
     /**
-     * Built-in registry backed by a {@link ConcurrentHashMap}. Two registrations are issued for
-     * each numeric pair: {@code int.class} and {@code Integer.class} share the same handler
-     * implementation but the null-boxing distinguishes primitive vs. wrapper.
+     * 由 {@link ConcurrentHashMap} 支撑的内置注册表。每对数值类型会注册两次:
+     * {@code int.class} 和 {@code Integer.class} 共用同一个处理器
+     * 实现,但通过 null 装箱区分基本类型与包装类。
      */
     final class Registry {
 
         private static final Map<Class<?>, TypeHandler> HANDLERS = new ConcurrentHashMap<>();
 
         static {
-            // ---- Numeric pairs ----
+            // ---- 数值类型对 ----
             TypeHandler intRead = (rs, col, type) -> primitiveNull(rs, rs.getInt(col), type, 0);
             TypeHandler longRead = (rs, col, type) -> primitiveNull(rs, rs.getLong(col), type, 0L);
             TypeHandler shortRead =
@@ -136,24 +135,24 @@ public interface TypeHandler {
                         return bd == null ? null : bd.toBigInteger();
                     });
 
-            // ---- String family ----
+            // ---- 字符串族 ----
             register(String.class, (rs, col, type) -> rs.getString(col));
 
-            // ---- Binary ----
+            // ---- 二进制 ----
             register(byte[].class, (rs, col, type) -> rs.getBytes(col));
             register(InputStream.class, (rs, col, type) -> rs.getBinaryStream(col));
             register(Blob.class, (rs, col, type) -> rs.getBlob(col));
             register(Clob.class, (rs, col, type) -> rs.getClob(col));
             register(Reader.class, (rs, col, type) -> rs.getCharacterStream(col));
 
-            // ---- Dates (java.util.* / java.sql.*) ----
+            // ---- 日期(java.util.* / java.sql.*) ----
             register(java.util.Date.class, (rs, col, type) -> rs.getTimestamp(col));
             register(Timestamp.class, (rs, col, type) -> rs.getTimestamp(col));
             register(java.sql.Date.class, (rs, col, type) -> rs.getDate(col));
             register(Time.class, (rs, col, type) -> rs.getTime(col));
 
             // ---- java.time ----
-            // Try JDBC 4.2 first (getObject(col, Class)); fall back to Timestamp-based convert.
+            // 先尝试 JDBC 4.2 的 getObject(col, Class);失败则回退到基于 Timestamp 的转换。
 
             register(
                     LocalDate.class,
@@ -207,7 +206,7 @@ public interface TypeHandler {
                         }
                     });
 
-            // ---- Enum (lookup-by-name; falls back to ordinal on numeric columns) ----
+            // ---- Enum(按名称查找;数值列上回退到序号) ----
             register(
                     Enum.class,
                     (rs, col, type) -> {
@@ -223,7 +222,7 @@ public interface TypeHandler {
                         try {
                             return Enum.valueOf(enumType, name);
                         } catch (IllegalArgumentException e) {
-                            // Maybe the column stored ordinals.
+                            // 也许列中存储的是序号。
                             try {
                                 int ordinal = Integer.parseInt(name);
                                 Object[] constants = enumType.getEnumConstants();
@@ -253,7 +252,7 @@ public interface TypeHandler {
             }
             TypeHandler h = HANDLERS.get(type);
             if (h == null && type.isEnum()) {
-                // Enum subclasses land here — they were not directly registered.
+                // 枚举子类会落到这里——它们没有直接注册。
                 return HANDLERS.get(Enum.class);
             }
             return h;

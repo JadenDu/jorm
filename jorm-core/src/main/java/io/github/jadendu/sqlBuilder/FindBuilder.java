@@ -13,13 +13,13 @@ import io.github.jadendu.dto.Condition;
 import io.github.jadendu.entity.EntityModel;
 import io.github.jadendu.entity.EntityModelRegistry;
 import io.github.jadendu.exception.ErrorCode;
+import io.github.jadendu.util.SqlBuilderHelper;
 import io.github.jadendu.util.SqlValidator;
 
 /**
- * Static SELECT builder. Uses the cached {@link EntityModel} for the active table, validates every
- * condition column/operator against the entity whitelist to prevent SQL injection, and renders the
- * {@code LIMIT/OFFSET} clause through the active {@link Dialect} so cross-DB portability is
- * respected.
+ * 静态 SELECT 构建器。使用当前表的缓存 {@link EntityModel}，针对实体白名单校验每个
+ * 条件列/操作符以防止 SQL 注入，并通过当前 {@link Dialect} 渲染
+ * {@code LIMIT/OFFSET} 子句，从而保证跨数据库的可移植性。
  *
  * @author JadenDu
  */
@@ -45,7 +45,7 @@ public final class FindBuilder {
         EntityModel model = EntityModelRegistry.get(cls);
 
         SqlValidator.validateConditions(model, conditions, ErrorCode.INVALID_COLUMN);
-        SqlValidator.validateConditions(model, havingConditions, ErrorCode.INVALID_COLUMN);
+        SqlValidator.validateConditions(model, havingConditions, ErrorCode.INVALID_COLUMN, true);
         SqlValidator.validateGroupBy(model, group);
         SqlValidator.validateOrderBy(model, orderBy);
         SqlValidator.validateSelectClause(model, selectClause);
@@ -58,7 +58,7 @@ public final class FindBuilder {
             sql.append(" WHERE ");
             List<String> parts = new ArrayList<>(conditions.size());
             for (Condition cond : conditions) {
-                parts.add(cond.getColumn() + " " + cond.getOperator() + " ?");
+                parts.add(SqlBuilderHelper.renderCondition(cond));
             }
             sql.append(String.join(" AND ", parts));
         }
@@ -71,7 +71,7 @@ public final class FindBuilder {
             sql.append(" HAVING ");
             List<String> parts = new ArrayList<>(havingConditions.size());
             for (Condition cond : havingConditions) {
-                parts.add(cond.getColumn() + " " + cond.getOperator() + " ?");
+                parts.add(SqlBuilderHelper.renderCondition(cond));
             }
             sql.append(String.join(" AND ", parts));
         }

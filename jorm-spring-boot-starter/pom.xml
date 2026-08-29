@@ -47,7 +47,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
-        <!-- Spring Boot Actuator (optional): exposes JormHealthIndicator -->
+        <!-- Spring Boot Actuator (可选): 提供 JormHealthIndicator -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-actuator</artifactId>
@@ -71,7 +71,7 @@
             <groupId>io.github.jadendu</groupId>
             <artifactId>jorm-core</artifactId>
         </dependency>
-        <!-- API stability annotations -->
+        <!-- API 稳定性注解 -->
         <dependency>
             <groupId>org.apiguardian</groupId>
             <artifactId>apiguardian-api</artifactId>
@@ -161,14 +161,14 @@
                 <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
             <!-- ========================================== -->
-            <!-- Spotless: enforce a single code format.    -->
+            <!-- Spotless: 统一代码格式。                    -->
             <!-- ========================================== -->
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
             </plugin>
             <!-- ========================================== -->
-            <!-- Checkstyle: shared config under build-tools. -->
+            <!-- Checkstyle: 共享配置位于 build-tools 下。 -->
             <!-- ========================================== -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -189,7 +189,7 @@
                 </executions>
             </plugin>
             <!-- ========================================== -->
-            <!-- SpotBugs: bug-pattern static analysis.      -->
+            <!-- SpotBugs: 缺陷模式静态分析。                -->
             <!-- ========================================== -->
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
@@ -208,8 +208,8 @@
                 </executions>
             </plugin>
             <!-- ========================================== -->
-            <!-- JaCoCo: coverage report (no strict gate;   -->
-            <!-- starter integration tests require live Redis) -->
+            <!-- JaCoCo: 覆盖率报告 (不设严格门槛;           -->
+            <!-- starter 集成测试需要可用的 Redis)            -->
             <!-- ========================================== -->
             <plugin>
                 <groupId>org.jacoco</groupId>

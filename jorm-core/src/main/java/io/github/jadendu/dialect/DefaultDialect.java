@@ -6,12 +6,12 @@ import java.sql.SQLException;
 import org.apiguardian.api.API;
 
 /**
- * The catch-all dialect. Targets the {@code LIMIT ? OFFSET ?} clause family (MySQL 5+, PostgreSQL,
- * H2 in MySQL mode, MariaDB, SQLite). Use this when no database-specific dialect is known.
+ * 兜底方言。针对 {@code LIMIT ? OFFSET ?} 子句系列(MySQL 5+、PostgreSQL、
+ * MySQL 模式下的 H2、MariaDB、SQLite)。当没有已知的数据库专属方言时使用本方言。
  *
- * <p>Duplicate-key detection here covers the {@code SQLState 23505} family used by PostgreSQL and
- * H2; vendors with their own conventions (MySQL: {@code 23000} + 1062) override {@link
- * #isDuplicateKey}.
+ * <p>这里的重复键检测覆盖 PostgreSQL 与 H2 使用的 {@code SQLState 23505} 系列;
+ * 采用自定义约定的厂商(MySQL:{@code 23000} + 1062)会覆写 {@link
+ * #isDuplicateKey}。
  *
  * @author JadenDu
  */
@@ -20,7 +20,7 @@ public class DefaultDialect implements Dialect {
 
     private static final long serialVersionUID = 1L;
 
-    /** Singleton instance — dialects are stateless. */
+    /** 单例实例——方言是无状态的。 */
     public static final DefaultDialect INSTANCE = new DefaultDialect();
 
     @Override
@@ -33,9 +33,8 @@ public class DefaultDialect implements Dialect {
             sb.append(" LIMIT ").append(limit);
         }
         if (offset != null) {
-            // Some dialects (older MySQL) require LIMIT before OFFSET is
-            // valid; emit a sentinel "all rows" limit when only offset
-            // was specified.
+            // 某些方言(旧版 MySQL)要求 LIMIT 必须位于 OFFSET 之前才能生效;
+            // 当只指定了 offset 时,发出一个表示"全部行"的哨兵 limit。
             if (limit == null) {
                 sb.append(" LIMIT ").append(Integer.MAX_VALUE);
             }

@@ -7,9 +7,9 @@ import io.github.jadendu.metrics.CacheStatistics;
 import io.github.jadendu.metrics.StatisticsRegistry;
 
 /**
- * Cache-decorator that records hit/miss/put/eviction counts in the shared {@link
- * StatisticsRegistry}. Applied transparently by {@link CacheManager#setSecondLevelCache} so callers
- * don't need to change a single line.
+ * 缓存装饰器,在共享的 {@link
+ * StatisticsRegistry} 中记录命中/未命中/写入/移除计数。由 {@link CacheManager#setSecondLevelCache}
+ * 透明地应用,调用方无需修改任何代码。
  *
  * @author JadenDu
  */
@@ -31,7 +31,7 @@ public final class MeasuringSecondLevelCache implements SecondLevelCache {
         this.stats = stats == null ? StatisticsRegistry.cache() : stats;
     }
 
-    /** Original cache under the measurement wrapper. */
+    /** 测量包装器下的原始缓存。 */
     public SecondLevelCache delegate() {
         return delegate;
     }
@@ -42,7 +42,7 @@ public final class MeasuringSecondLevelCache implements SecondLevelCache {
             delegate.put(region, key, value);
             stats.recordPut();
         } catch (RuntimeException e) {
-            // still record something; the put failed but we count it as a put attempt
+            // 仍然记录一次;写入失败也计入写入尝试次数
             stats.recordPut();
             throw e;
         }
