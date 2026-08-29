@@ -36,7 +36,7 @@ jobs:
           cache: maven
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: java
           queries: +security-and-quality
@@ -50,6 +50,6 @@ jobs:
         # 导致 starter 解析 jorm-core 的 artifact descriptor 时找不到 parent pom.
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           category: "jorm-java"
