@@ -59,7 +59,7 @@
         <spotless.version>2.43.0</spotless.version>
         <google-java-format.version>1.17.0</google-java-format.version>
         <checkstyle.plugin.version>3.3.1</checkstyle.plugin.version>
-        <checkstyle.version>10.12.7</checkstyle.version>
+        <checkstyle.version>14.0.0</checkstyle.version>
         <spotbugs.plugin.version>4.8.6.5</spotbugs.plugin.version>
         <spotbugs.version>4.8.6</spotbugs.version>
         <jacoco.plugin.version>0.8.11</jacoco.plugin.version>
